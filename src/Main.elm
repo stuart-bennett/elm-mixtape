@@ -4,6 +4,7 @@ import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode as Decode
 import Querystring exposing (..)
+import Authorise
 
 main =
     Html.programWithFlags
@@ -87,13 +88,15 @@ view : Model -> Html Msg
 view model =
     div []
     [ searchView ""
+    , div [] [ text (toString model.oAuthToken)]
     , ul [] (List.map songsView model.includedTracks)
     ]
 
 searchView : string -> Html Msg
 searchView model =
     div []
-    [ h1 [] [ text "Search" ]
+    [ Authorise.view
+    , h1 [] [ text "Search" ]
     , input 
     [ placeholder "Start typing a track name or artist..."
     , onInput PerformSearch
