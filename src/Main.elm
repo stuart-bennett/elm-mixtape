@@ -3,14 +3,15 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode as Decode
+import Querystring exposing (..)
 
 main =
-    Html.program
+    Html.programWithFlags
         { init = init 
         , subscriptions = subscriptions
         , view = view
         , update = update
-        }
+       }
 
 srDecoder : Decode.Decoder Int
 srDecoder =
@@ -30,11 +31,22 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.none
 
+type alias Flags =
+    { locationFragment: String
+    }
+
 -- INIT
-init : (Model, Cmd Msg)
-init =
+init : Flags -> (Model, Cmd Msg)
+init flags =
+    let
+        -- Tokens appear in the fragment during oAuth "implicit" flow
+        queryStringItems = Querystring.getItems flags.locationFragment
+    in
     (
         { includedTracks = [ "You haven't selected any tracks yet, use the search bar to find new tracks." ]
+        , oAuthToken = Tuple.second
+            <| Maybe.withDefault (Nothing, Nothing)
+            <| List.head queryStringItems
         },
         Cmd.none
     )
@@ -42,11 +54,13 @@ init =
 -- MODEL
 type alias Model = 
     { includedTracks : List String
+    , oAuthToken : Maybe String
     }
 
 model : Model
 model =
     { includedTracks = [ "You haven't selected any tracks yet, use the search bar to find new tracks." ]
+    , oAuthToken = Just ""
     }
 
 
