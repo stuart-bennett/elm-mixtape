@@ -87,15 +87,15 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-    [ searchView ""
+    [ searchView (model.oAuthToken /= Nothing)
     , div [] [ text (toString model.oAuthToken)]
     , ul [] (List.map songsView model.includedTracks)
     ]
 
-searchView : string -> Html Msg
-searchView model =
+searchView : Bool -> Html Msg
+searchView isAuthorised =
     div []
-    [ Authorise.view
+    [ Authorise.view isAuthorised
     , h1 [] [ text "Search" ]
     , input 
     [ placeholder "Start typing a track name or artist..."
