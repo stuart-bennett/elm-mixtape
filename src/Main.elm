@@ -5,6 +5,7 @@ import Http
 import Json.Decode as Decode
 import Querystring exposing (..)
 import Authorise
+import Spotify
 
 main =
     Html.programWithFlags
@@ -18,19 +19,14 @@ srDecoder : Decode.Decoder Int
 srDecoder =
     Decode.at["artists", "total"] Decode.int
 
-getSearch : String -> Cmd Msg
-getSearch searchTerm =
-    let
-        url = "http://localhost:8000/sample.json"
-        request = Http.get url srDecoder
-    in
-        Http.send SearchResults request
-
+getSearch : String -> String -> Cmd Msg
+getSearch searchTerm token =
+    Spotify.search searchTerm token SearchResults
 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+   Sub.none
 
 type alias Flags =
     { locationFragment: String
@@ -69,7 +65,7 @@ model =
 type Msg
     = Increment
     | PerformSearch String
-    | SearchResults (Result Http.Error Int)
+    | SearchResults (Result Http.Error String)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -77,7 +73,7 @@ update msg model =
         Increment ->
             (model, Cmd.none)
         PerformSearch term ->
-            (model, getSearch term)
+            (model, (getSearch term (Maybe.withDefault "" model.oAuthToken)))
         SearchResults (Ok response) ->
             ({ model | includedTracks = [(toString response)] }, Cmd.none)
         SearchResults (Err error) ->
