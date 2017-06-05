@@ -15,10 +15,6 @@ main =
         , update = update
        }
 
-srDecoder : Decode.Decoder Int
-srDecoder =
-    Decode.at["artists", "total"] Decode.int
-
 getSearch : String -> String -> Cmd Msg
 getSearch searchTerm token =
     Spotify.search searchTerm token SearchResults
@@ -65,7 +61,7 @@ model =
 type Msg
     = Increment
     | PerformSearch String
-    | SearchResults (Result Http.Error String)
+    | SearchResults (Result Http.Error (List String))
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -75,7 +71,7 @@ update msg model =
         PerformSearch term ->
             (model, (getSearch term (Maybe.withDefault "" model.oAuthToken)))
         SearchResults (Ok response) ->
-            ({ model | includedTracks = [(toString response)] }, Cmd.none)
+            ({ model | includedTracks = response }, Cmd.none)
         SearchResults (Err error) ->
             ({ model | includedTracks = [ "error!", (toString error) ] }, Cmd.none)
 
