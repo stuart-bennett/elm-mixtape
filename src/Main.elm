@@ -1,4 +1,4 @@
-import Html exposing (Html, button, div, ul, li, input, h1, text)
+import Html exposing (Html, button, div, ul, li, pre, input, h1, text)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http
@@ -84,7 +84,6 @@ view : Model -> Html Msg
 view model =
     div []
     [ searchView (model.oAuthToken /= Nothing)
-    , div [] [ text (toString model.oAuthToken)]
     , ul [] (List.map songsView model.includedTracks)
     ]
 
@@ -101,4 +100,6 @@ searchView isAuthorised =
 
 songsView : String -> Html Msg
 songsView model =
-    li [] [ text model ]
+    li [] 
+    [ pre [] [ text model ]
+    ]
