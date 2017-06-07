@@ -3,7 +3,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode as Decode
-import Querystring exposing (..)
+import Querystring
 import Authorise
 import Spotify
 
