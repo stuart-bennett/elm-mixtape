@@ -36,7 +36,10 @@ init flags =
         queryStringItems = Querystring.getItems flags.locationFragment
     in
     (
-        { includedTracks = [ "You haven't selected any tracks yet, use the search bar to find new tracks." ]
+        { includedTracks = [ 
+            { id = "" 
+            , name = "You haven't selected any tracks yet, use the search bar to find new tracks." }
+            ]
         , oAuthToken = Tuple.second
             <| Maybe.withDefault (Nothing, Nothing)
             <| List.head queryStringItems
@@ -46,13 +49,13 @@ init flags =
 
 -- MODEL
 type alias Model = 
-    { includedTracks : List String
+    { includedTracks : List (Spotify.SearchResult)
     , oAuthToken : Maybe String
     }
 
 model : Model
 model =
-    { includedTracks = [ "You haven't selected any tracks yet, use the search bar to find new tracks." ]
+    { includedTracks = [ { id = "", name = "You haven't selected any tracks yet, use the search bar to find new tracks." } ]
     , oAuthToken = Just ""
     }
 
@@ -61,7 +64,7 @@ model =
 type Msg
     = Increment
     | PerformSearch String
-    | SearchResults (Result Http.Error (List String))
+    | SearchResults (Result Http.Error (List Spotify.SearchResult))
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -73,7 +76,10 @@ update msg model =
         SearchResults (Ok response) ->
             ({ model | includedTracks = response }, Cmd.none)
         SearchResults (Err error) ->
-            ({ model | includedTracks = [ "error!", (toString error) ] }, Cmd.none)
+            ({ model | includedTracks = 
+                [ { id = "", name = "error!" }
+                , { id = "", name = (toString error) } ]
+            }, Cmd.none)
 
 -- VIEW
 view : Model -> Html Msg
@@ -94,8 +100,9 @@ searchView isAuthorised =
     ] []
     ]
 
-songsView : String -> Html Msg
+songsView : Spotify.SearchResult -> Html Msg
 songsView model =
     li [] 
-    [ pre [] [ text model ]
+    [ pre [] [ text model.name ]
+    , pre [] [ text model.id ]
     ]
