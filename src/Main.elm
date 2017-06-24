@@ -9,7 +9,7 @@ import Spotify
 
 main =
     Html.programWithFlags
-        { init = init 
+        { init = init
         , subscriptions = subscriptions
         , view = view
         , update = update
@@ -36,10 +36,7 @@ init flags =
         queryStringItems = Querystring.getItems flags.locationFragment
     in
     (
-        { includedTracks = [ 
-            { id = "" 
-            , name = "You haven't selected any tracks yet, use the search bar to find new tracks." }
-            ]
+        { searchResults = { results = [], error = "" }
         , oAuthToken = Tuple.second
             <| Maybe.withDefault (Nothing, Nothing)
             <| List.head queryStringItems
@@ -48,14 +45,19 @@ init flags =
     )
 
 -- MODEL
-type alias Model = 
-    { includedTracks : List (Spotify.SearchResult)
+type alias Model =
+    { searchResults : SearchResultsModel
     , oAuthToken : Maybe String
+    }
+
+type alias SearchResultsModel =
+    { results : List (Spotify.SearchResult)
+    , error : String
     }
 
 model : Model
 model =
-    { includedTracks = [ { id = "", name = "You haven't selected any tracks yet, use the search bar to find new tracks." } ]
+    { searchResults = { results = [], error = "" }
     , oAuthToken = Just ""
     }
 
@@ -74,19 +76,17 @@ update msg model =
         PerformSearch term ->
             (model, (getSearch term (Maybe.withDefault "" model.oAuthToken)))
         SearchResults (Ok response) ->
-            ({ model | includedTracks = response }, Cmd.none)
+            ({ model | searchResults = { results = response, error = "" }}, Cmd.none)
         SearchResults (Err error) ->
-            ({ model | includedTracks = 
-                [ { id = "", name = "error!" }
-                , { id = "", name = (toString error) } ]
-            }, Cmd.none)
+            ({ model | searchResults = { results = [], error = "error!" }}, Cmd.none)
 
 -- VIEW
 view : Model -> Html Msg
 view model =
     div []
     [ searchView (model.oAuthToken /= Nothing)
-    , ul [] (List.map songsView model.includedTracks)
+    , searchResultsView model.searchResults
+    --, ul [] (List.map searchResultsView model.includedTracks)
     ]
 
 searchView : Bool -> Html Msg
@@ -100,9 +100,12 @@ searchView isAuthorised =
     ] []
     ]
 
-songsView : Spotify.SearchResult -> Html Msg
-songsView model =
-    li [] 
-    [ pre [] [ text model.name ]
-    , pre [] [ text model.id ]
-    ]
+searchResultsListItem : Spotify.SearchResult -> Html Msg
+searchResultsListItem model =
+    li []
+        [ pre [] [ text model.name ]
+        , pre [] [ text model.id ]]
+
+searchResultsView : SearchResultsModel -> Html Msg
+searchResultsView model =
+    ul [] ( List.map searchResultsListItem model.results )
