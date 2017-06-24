@@ -6,6 +6,7 @@ import Json.Decode as Decode
 import Querystring
 import Authorise
 import Spotify
+import Search exposing (view, Model)
 
 main =
     Html.programWithFlags
@@ -46,21 +47,16 @@ init flags =
 
 -- MODEL
 type alias Model =
-    { searchResults : SearchResultsModel
+    { searchResults : Search.Model
     , oAuthToken : Maybe String
     }
 
-type alias SearchResultsModel =
-    { results : List (Spotify.SearchResult)
-    , error : String
-    }
 
 model : Model
 model =
     { searchResults = { results = [], error = "" }
     , oAuthToken = Just ""
     }
-
 
 -- UPDATE
 type Msg
@@ -84,12 +80,12 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-    [ searchView (model.oAuthToken /= Nothing)
-    , searchResultsView model.searchResults
+    [ searchInputView (model.oAuthToken /= Nothing)
+    , Search.view model.searchResults
     ]
 
-searchView : Bool -> Html Msg
-searchView isAuthorised =
+searchInputView : Bool -> Html Msg
+searchInputView isAuthorised =
     div []
     [ Authorise.view isAuthorised
     , h1 [] [ text "Search" ]
@@ -98,20 +94,3 @@ searchView isAuthorised =
     , onInput PerformSearch
     ] []
     ]
-
-searchResultsListItem : Spotify.SearchResult -> Html Msg
-searchResultsListItem model =
-    li []
-        [ pre [] [ text model.name ]
-        , pre [] [ text model.id ]]
-
-searchResultsView : SearchResultsModel -> Html Msg
-searchResultsView model =
-    let
-        hasError = not (String.isEmpty model.error)
-    in
-        case hasError of
-            True ->
-                span [] [ text model.error ]
-            False ->
-                ul [] ( List.map searchResultsListItem model.results )
