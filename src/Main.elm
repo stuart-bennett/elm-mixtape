@@ -1,4 +1,4 @@
-import Html exposing (Html, button, div, ul, li, pre, input, h1, text)
+import Html exposing (Html, button, div, ul, li, pre, input, h1, text, span)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http
@@ -78,7 +78,7 @@ update msg model =
         SearchResults (Ok response) ->
             ({ model | searchResults = { results = response, error = "" }}, Cmd.none)
         SearchResults (Err error) ->
-            ({ model | searchResults = { results = [], error = "error!" }}, Cmd.none)
+            ({ model | searchResults = { results = [], error = (toString error) }}, Cmd.none)
 
 -- VIEW
 view : Model -> Html Msg
@@ -86,7 +86,6 @@ view model =
     div []
     [ searchView (model.oAuthToken /= Nothing)
     , searchResultsView model.searchResults
-    --, ul [] (List.map searchResultsView model.includedTracks)
     ]
 
 searchView : Bool -> Html Msg
@@ -108,4 +107,11 @@ searchResultsListItem model =
 
 searchResultsView : SearchResultsModel -> Html Msg
 searchResultsView model =
-    ul [] ( List.map searchResultsListItem model.results )
+    let
+        hasError = not (String.isEmpty model.error)
+    in
+        case hasError of
+            True ->
+                span [] [ text model.error ]
+            False ->
+                ul [] ( List.map searchResultsListItem model.results )
