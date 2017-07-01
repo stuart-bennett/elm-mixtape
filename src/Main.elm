@@ -5,6 +5,7 @@ import Http
 import Json.Decode as Decode
 import Querystring
 import Authorise
+import Playlists exposing (view)
 import Spotify
 import Search exposing (view, Model)
 
@@ -82,6 +83,7 @@ view model =
     div []
     [ searchInputView (model.oAuthToken /= Nothing)
     , Search.view model.searchResults
+    , Playlists.view
     ]
 
 searchInputView : Bool -> Html Msg
@@ -89,7 +91,7 @@ searchInputView isAuthorised =
     div []
     [ Authorise.view isAuthorised
     , h1 [] [ text "Search" ]
-    , input 
+    , input
     [ placeholder "Start typing a track name or artist..."
     , onInput PerformSearch
     ] []
