@@ -6,7 +6,7 @@ import Json.Decode as Decode
 import Querystring
 import Authorise
 import PlaylistEditor exposing (view, Model)
-import Playlists exposing (view)
+import Playlists exposing (view, Model)
 import Spotify
 import Search exposing (view, Model)
 
@@ -17,6 +17,10 @@ main =
         , view = view
         , update = update
        }
+
+getPlaylists : String -> Cmd Msg
+getPlaylists token =
+    Spotify.fetchPlaylists token PlaylistResults
 
 getSearch : String -> String -> Cmd Msg
 getSearch searchTerm token =
@@ -40,6 +44,7 @@ init flags =
     in
     (
         { searchResults = { results = [], error = "" }
+        , playlists = { playlists = [], error = "" }
         , selectedPlaylist = Nothing
         , oAuthToken = Tuple.second
             <| Maybe.withDefault (Nothing, Nothing)
@@ -51,31 +56,37 @@ init flags =
 -- MODEL
 type alias Model =
     { searchResults : Search.Model
+    , playlists : Playlists.Model
     , selectedPlaylist : Maybe PlaylistEditor.Model
     , oAuthToken : Maybe String
     }
 
-
 model : Model
 model =
     { searchResults = { results = [], error = "" }
+    , playlists = { playlists = [], error = "" }
     , selectedPlaylist = Nothing
     , oAuthToken = Just ""
     }
 
 -- UPDATE
 type Msg
-    = Increment
+    = FetchPlaylists
+    | PlaylistResults (Result Http.Error (List Spotify.Playlist))
     | PerformSearch String
     | SearchResults (Result Http.Error (List Spotify.SearchResult))
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        Increment ->
-            (model, Cmd.none)
+        FetchPlaylists ->
+            (model, (getPlaylists (Maybe.withDefault "" model.oAuthToken)))
         PerformSearch term ->
             (model, (getSearch term (Maybe.withDefault "" model.oAuthToken)))
+        PlaylistResults (Ok response) ->
+            ({ model | playlists = { playlists = response, error = "" }}, Cmd.none)
+        PlaylistResults (Err error) ->
+            ({ model | playlists = { playlists = [], error = (toString error)}}, Cmd.none)
         SearchResults (Ok response) ->
             ({ model | searchResults = { results = response, error = "" }}, Cmd.none)
         SearchResults (Err error) ->
@@ -88,7 +99,7 @@ view model =
     [ searchInputView (model.oAuthToken /= Nothing)
     , PlaylistEditor.view model.selectedPlaylist
     , Search.view model.searchResults
-    , Playlists.view
+    , Playlists.view model.playlists
     ]
 
 searchInputView : Bool -> Html Msg

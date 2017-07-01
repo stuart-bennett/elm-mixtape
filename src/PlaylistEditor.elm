@@ -13,7 +13,6 @@ view model =
         _ ->
             editorView (Maybe.withDefault { title = "" } model)
 
-
 editorView : Model -> Html msg
 editorView model =
     div []

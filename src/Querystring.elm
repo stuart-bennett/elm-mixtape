@@ -1,5 +1,6 @@
 port module Querystring exposing 
     ( convert
+    , empty
     , getItems
     , toString
     , Querystring )
@@ -12,6 +13,9 @@ port getParamResult : (String -> msg) -> Sub msg
 
 type alias Querystring =
     List (Maybe String, Maybe String)
+
+empty : Querystring
+empty = []
 
 toString : List(Maybe String, Maybe String) -> String
 toString list =
