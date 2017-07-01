@@ -5,6 +5,7 @@ import Http
 import Json.Decode as Decode
 import Querystring
 import Authorise
+import PlaylistEditor exposing (view, Model)
 import Playlists exposing (view)
 import Spotify
 import Search exposing (view, Model)
@@ -39,6 +40,7 @@ init flags =
     in
     (
         { searchResults = { results = [], error = "" }
+        , selectedPlaylist = Nothing
         , oAuthToken = Tuple.second
             <| Maybe.withDefault (Nothing, Nothing)
             <| List.head queryStringItems
@@ -49,6 +51,7 @@ init flags =
 -- MODEL
 type alias Model =
     { searchResults : Search.Model
+    , selectedPlaylist : Maybe PlaylistEditor.Model
     , oAuthToken : Maybe String
     }
 
@@ -56,6 +59,7 @@ type alias Model =
 model : Model
 model =
     { searchResults = { results = [], error = "" }
+    , selectedPlaylist = Nothing
     , oAuthToken = Just ""
     }
 
@@ -82,6 +86,7 @@ view : Model -> Html Msg
 view model =
     div []
     [ searchInputView (model.oAuthToken /= Nothing)
+    , PlaylistEditor.view model.selectedPlaylist
     , Search.view model.searchResults
     , Playlists.view
     ]
