@@ -1,5 +1,6 @@
 module PlaylistEditor exposing (view, Model)
 import Html exposing (..)
+import Html.Attributes exposing (class)
 import Spotify
 
 type alias Model = Spotify.Playlist
@@ -15,11 +16,12 @@ view model =
 editorView : Model -> Html msg
 editorView model =
     div []
-    [ h1 [] [ text model.name ]
+    [ h2 [] [ text model.name ]
     ]
 
 noPlaylistSelectedView : Html msg
 noPlaylistSelectedView =
     div []
-    [ span [] [ text "Nothing selected!" ]
+    [ h2 [ class "h2"] [ text "Nothing selected!" ]
+    , p [] [ text "Select a playlist to begin editing" ]
     ]

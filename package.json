@@ -1,0 +1,26 @@
+{
+  "name": "elm-stuff",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/Main.elm",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stuart-bennett/elm-mixtape.git"
+  },
+  "author": "Stuart Bennett",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stuart-bennett/elm-mixtape/issues"
+  },
+  "homepage": "https://github.com/stuart-bennett/elm-mixtape#readme",
+  "dependencies": {
+    "bootstrap": "^3.3.7"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-less": "^3.3.2"
+  }
+}

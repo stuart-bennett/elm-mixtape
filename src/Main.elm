@@ -1,4 +1,4 @@
-import Html exposing (Html, button, div, ul, li, pre, input, h1, text, span)
+import Html exposing (Html, button, div, ul, li, pre, input, h1, h2, text, span)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http
@@ -98,10 +98,12 @@ update msg model =
 -- VIEW
 view : Model -> Html Msg
 view model =
-    div []
-    [ searchInputView (model.oAuthToken /= Nothing)
-    , PlaylistEditor.view model.selectedPlaylist
-    , Search.view model.searchResults
+    div [ class "container" ]
+    [ h1 [ class "text-center" ] [ text "elm-mixtape" ]
+    , div [ class "row" ]
+        [ div [ class "col-md-6" ] [ PlaylistEditor.view model.selectedPlaylist ]
+        , div [ class "col-md-6" ] [ searchInputView (model.oAuthToken /= Nothing)
+            , Search.view model.searchResults ] ]
     , Playlists.view model.playlists FetchPlaylists SelectPlaylist
     ]
 
@@ -109,9 +111,11 @@ searchInputView : Bool -> Html Msg
 searchInputView isAuthorised =
     div []
     [ Authorise.view isAuthorised
-    , h1 [] [ text "Search" ]
+    , h2 [] [ text "Search" ]
     , input
     [ placeholder "Start typing a track name or artist..."
+    , type_ "search"
+    , class "form-control "
     , onInput PerformSearch
     ] []
     ]

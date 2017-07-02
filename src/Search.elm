@@ -18,10 +18,10 @@ view model =
             True ->
                 span [] [ text model.error ]
             False ->
-                ul [] ( List.map listItemView model.results )
+                ul [ class "list-group" ] ( List.map listItemView model.results )
 
 listItemView : Spotify.SearchResult -> Html msg
 listItemView model =
-    li []
-        [ pre [] [ text model.name ]
-        , pre [] [ text model.id ]]
+    li [ class "list-group-item selectable" ]
+        [ h1 [ class "h4" ] [ text model.name ]
+        , span [] [ text model.id ]]

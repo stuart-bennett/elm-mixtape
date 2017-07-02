@@ -1,5 +1,6 @@
 module Playlists exposing (view, Model)
 import Html exposing (..)
+import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Spotify
 
@@ -10,9 +11,10 @@ type alias Model =
 
 itemView : Spotify.Playlist -> (Spotify.Playlist -> msg) -> Html msg
 itemView playlist selectFn =
-    li []
-    [ button [ onClick (selectFn playlist) ] [ text playlist.name ]
-    ]
+    li [ class "list-group-item selectable", onClick (selectFn playlist) ]
+    [ h1 [ class "h4" ] [ text playlist.name ]
+    , button [ class "btn btn-primary hide"
+             , onClick (selectFn playlist) ] [ text "Select" ] ]
 
 view : Model -> msg -> (Spotify.Playlist -> msg) -> Html msg
 view model refreshMsg selectFn =
@@ -25,5 +27,5 @@ view model refreshMsg selectFn =
                 div [] [ text ("ERROR: " ++ model.error) ]
             False ->
                 div []
-                [ button [ onClick refreshMsg ] [ text "Refresh" ]
-                , ul [] (List.map (\x -> itemView x selectFn) model.playlists) ]
+                [ button [ class "btn btn-primary", onClick refreshMsg ] [ text "Refresh" ]
+                , ul [ class "list-group" ] (List.map (\x -> itemView x selectFn) model.playlists) ]
