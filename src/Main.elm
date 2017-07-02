@@ -6,7 +6,7 @@ import Json.Decode as Decode
 import Querystring
 import Authorise
 import PlaylistEditor exposing (view, Model)
-import Playlists exposing (view, Model)
+import Playlists exposing (..)
 import Spotify
 import Search exposing (view, Model)
 
@@ -73,12 +73,15 @@ model =
 type Msg
     = FetchPlaylists
     | PlaylistResults (Result Http.Error (List Spotify.Playlist))
+    | SelectPlaylist Spotify.Playlist
     | PerformSearch String
     | SearchResults (Result Http.Error (List Spotify.SearchResult))
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
+        SelectPlaylist playlist ->
+            ({ model | selectedPlaylist = Just playlist }, Cmd.none)
         FetchPlaylists ->
             (model, (getPlaylists (Maybe.withDefault "" model.oAuthToken)))
         PerformSearch term ->
@@ -99,7 +102,7 @@ view model =
     [ searchInputView (model.oAuthToken /= Nothing)
     , PlaylistEditor.view model.selectedPlaylist
     , Search.view model.searchResults
-    , Playlists.view model.playlists
+    , Playlists.view model.playlists FetchPlaylists SelectPlaylist
     ]
 
 searchInputView : Bool -> Html Msg
