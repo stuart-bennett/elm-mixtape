@@ -17,7 +17,12 @@ editorView : Model -> Html msg
 editorView model =
     div []
     [ h2 [] [ text model.name ]
+    , ul [ class "list-group" ] (List.map tracksView model.tracks)
     ]
+
+tracksView : String -> Html msg
+tracksView track =
+    li [ class "list-group-item" ] [ text track ]
 
 noPlaylistSelectedView : Html msg
 noPlaylistSelectedView =

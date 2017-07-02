@@ -28,4 +28,5 @@ view model refreshMsg selectFn =
             False ->
                 div []
                 [ button [ class "btn btn-primary", onClick refreshMsg ] [ text "Refresh" ]
-                , ul [ class "list-group" ] (List.map (\x -> itemView x selectFn) model.playlists) ]
+                , ul [ class "list-group" ] (List.map (\x -> itemView x selectFn) model.playlists)
+                , button [ class "btn btn-primary", onClick (selectFn { name = "untitled", id = "", tracks = [] }) ] [ text "Add new..." ] ]

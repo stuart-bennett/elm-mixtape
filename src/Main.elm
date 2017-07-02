@@ -75,6 +75,7 @@ type Msg
     | PlaylistResults (Result Http.Error (List Spotify.Playlist))
     | SelectPlaylist Spotify.Playlist
     | PerformSearch String
+    | SearchResultSelected Spotify.SearchResult
     | SearchResults (Result Http.Error (List Spotify.SearchResult))
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -90,6 +91,12 @@ update msg model =
             ({ model | playlists = { playlists = response, error = "" }}, Cmd.none)
         PlaylistResults (Err error) ->
             ({ model | playlists = { playlists = [], error = (toString error)}}, Cmd.none)
+        SearchResultSelected searchResult ->
+            let
+                old = Maybe.withDefault { name = "", id = "", tracks = [] } model.selectedPlaylist
+                newValue = { old | tracks = (searchResult.name :: old.tracks) }
+            in
+                ({ model | selectedPlaylist = Just newValue }, Cmd.none)
         SearchResults (Ok response) ->
             ({ model | searchResults = { results = response, error = "" }}, Cmd.none)
         SearchResults (Err error) ->
@@ -103,7 +110,7 @@ view model =
     , div [ class "row" ]
         [ div [ class "col-md-6" ] [ PlaylistEditor.view model.selectedPlaylist ]
         , div [ class "col-md-6" ] [ searchInputView (model.oAuthToken /= Nothing)
-            , Search.view model.searchResults ] ]
+            , Search.view model.searchResults SearchResultSelected ] ]
     , Playlists.view model.playlists FetchPlaylists SelectPlaylist
     ]
 
@@ -115,7 +122,7 @@ searchInputView isAuthorised =
     , input
     [ placeholder "Start typing a track name or artist..."
     , type_ "search"
-    , class "form-control "
+    , class "form-control"
     , onInput PerformSearch
     ] []
     ]

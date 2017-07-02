@@ -1,6 +1,7 @@
 module Search exposing (view, Model)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import Spotify
 
 type alias Model =
@@ -9,8 +10,8 @@ type alias Model =
     }
 
 -- VIEW
-view : Model -> Html msg
-view model =
+view : Model -> (Spotify.SearchResult -> msg) -> Html msg
+view model selectFn =
     let
         hasError = not (String.isEmpty model.error)
     in
@@ -18,10 +19,13 @@ view model =
             True ->
                 span [] [ text model.error ]
             False ->
-                ul [ class "list-group" ] ( List.map listItemView model.results )
+                ul [ class "list-group" ] 
+                    ( List.map (\x -> (listItemView x selectFn)) model.results)
 
-listItemView : Spotify.SearchResult -> Html msg
-listItemView model =
-    li [ class "list-group-item selectable" ]
+listItemView : Spotify.SearchResult -> (Spotify.SearchResult -> msg) -> Html msg
+listItemView model selectFn =
+    li [  class "list-group-item selectable"
+        , onClick (selectFn model) ]
         [ h1 [ class "h4" ] [ text model.name ]
+        , span [] [ text ("type: " ++ (toString model.type_)) ]
         , span [] [ text model.id ]]

@@ -4,14 +4,19 @@ import Http exposing (..)
 import String exposing (concat)
 import Querystring exposing (..)
 
+type SearchResultType = Artist
+    | Track
+
 type alias SearchResult =
     { name: String
     , id: String
+    , type_: SearchResultType
     }
 
 type alias Playlist =
     { name: String
     , id: String
+    , tracks: (List String)
     }
 
 fetchPlaylists : String -> (Result Http.Error (List Playlist) -> msg) -> Cmd msg
@@ -33,7 +38,8 @@ search searchTerm token fn =
         endpoint = "/search"
         querystring = (Querystring.convert
             [ ("q", searchTerm)
-            , ("type", "artist,track") ])
+            , ("type", "artist,track")
+            , ("market", "GB") ])
     in
         doApiRequest
             endpoint
@@ -45,20 +51,39 @@ search searchTerm token fn =
 -- Decoders
 searchResultDecoder : Decode.Decoder (List SearchResult)
 searchResultDecoder =
-    Decode.at["artists", "items"]
-        <| Decode.list
-        <| Decode.map2 SearchResult
-        ( Decode.field "name" Decode.string )
-        ( Decode.field "id" Decode.string )
+    let
+        artistDecoder =
+            Decode.at["artists", "items"]
+                <| Decode.list
+                <| Decode.map3 SearchResult
+                ( Decode.field "name" Decode.string )
+                ( Decode.field "id" Decode.string )
+                ( Decode.field "type" (Decode.map searchResultTypeDecoder Decode.string) )
+        trackDecoder =
+            Decode.at["tracks", "items"]
+                <| Decode.list
+                <| Decode.map3 SearchResult
+                ( Decode.field "name" Decode.string )
+                ( Decode.field "id" Decode.string )
+                ( Decode.field "type" (Decode.map searchResultTypeDecoder Decode.string) )
+    in
+        trackDecoder
+
+searchResultTypeDecoder : String -> SearchResultType
+searchResultTypeDecoder val =
+    case val of
+        "artist" -> Artist
+        _ -> Track
+
 
 playlistDecoder : Decode.Decoder (List Playlist)
 playlistDecoder =
     Decode.at ["items"]
         <| Decode.list
-        <| Decode.map2 SearchResult
+        <| Decode.map3 Playlist
         ( Decode.field "name" Decode.string )
         ( Decode.field "id" Decode.string )
-
+        ( Decode.map (\_ -> []) Decode.string )
 
 doApiRequest : String -> Querystring -> String -> (Result Http.Error a -> msg) -> Decode.Decoder a -> Cmd msg
 doApiRequest endpoint querystring token fn decoder =
