@@ -96,7 +96,12 @@ update msg model =
                 old = Maybe.withDefault { name = "", id = "", tracks = [] } model.selectedPlaylist
                 newValue = { old | tracks = (searchResult.name :: old.tracks) }
             in
-                ({ model | selectedPlaylist = Just newValue }, Cmd.none)
+                case model.selectedPlaylist of
+                    Nothing ->
+                        (model, Cmd.none)
+                    Just playlist ->
+                        ({ model | selectedPlaylist = Just newValue }, Cmd.none)
+
         SearchResults (Ok response) ->
             ({ model | searchResults = { results = response, error = "" }}, Cmd.none)
         SearchResults (Err error) ->
