@@ -1,4 +1,4 @@
-module Spotify exposing (search, fetchPlaylists, SearchResult, Playlist)
+module Spotify exposing (search, savePlaylist, fetchPlaylists, SearchResult, Playlist)
 import Json.Decode as Decode
 import Http exposing (..)
 import String exposing (concat)
@@ -19,18 +19,33 @@ type alias Playlist =
     , tracks: (List String)
     }
 
-fetchPlaylists : String -> (Result Http.Error (List Playlist) -> msg) -> Cmd msg
-fetchPlaylists token fn =
+savePlaylist : String -> Playlist -> (Result Http.Error Playlist -> msg) -> Cmd msg
+savePlaylist token playlist fn =
     let
-        endpoint = "/me/playlists"
+        endpoint = "/users/stu.bennett/playlists"
     in
         doApiRequest
+            "POST"
+            (Http.stringBody "application/json" "{ \"name\": \"testing\" }")
             endpoint
             Querystring.empty
             token
             fn
             playlistDecoder
 
+fetchPlaylists : String -> (Result Http.Error (List Playlist) -> msg) -> Cmd msg
+fetchPlaylists token fn =
+    let
+        endpoint = "/me/playlists"
+    in
+        doApiRequest
+            "GET"
+            Http.emptyBody
+            endpoint
+            Querystring.empty
+            token
+            fn
+            playlistsDecoder
 
 search : String -> String -> (Result Http.Error (List SearchResult) -> msg) -> Cmd msg
 search searchTerm token fn =
@@ -42,6 +57,8 @@ search searchTerm token fn =
             , ("market", "GB") ])
     in
         doApiRequest
+            "GET"
+            Http.emptyBody
             endpoint
             querystring
             token
@@ -75,18 +92,21 @@ searchResultTypeDecoder val =
         "artist" -> Artist
         _ -> Track
 
-
-playlistDecoder : Decode.Decoder (List Playlist)
+playlistDecoder : Decode.Decoder Playlist
 playlistDecoder =
-    Decode.at ["items"]
-        <| Decode.list
-        <| Decode.map3 Playlist
+    Decode.map3 Playlist
         ( Decode.field "name" Decode.string )
         ( Decode.field "id" Decode.string )
         ( Decode.map (\_ -> []) Decode.string )
 
-doApiRequest : String -> Querystring -> String -> (Result Http.Error a -> msg) -> Decode.Decoder a -> Cmd msg
-doApiRequest endpoint querystring token fn decoder =
+playlistsDecoder : Decode.Decoder (List Playlist)
+playlistsDecoder =
+    Decode.at ["items"]
+        <| Decode.list
+        <| playlistDecoder
+
+doApiRequest : String -> Body -> String -> Querystring -> String -> (Result Http.Error a -> msg) -> Decode.Decoder a -> Cmd msg
+doApiRequest verb body endpoint querystring token fn decoder =
     let
         absoluteUrl =
             "https://api.spotify.com/v1" ++
@@ -95,10 +115,10 @@ doApiRequest endpoint querystring token fn decoder =
             (Querystring.toString querystring)
 
         request = Http.request
-            { method = "GET"
+            { method = verb
             , headers = [Http.header "Authorization" ("Bearer " ++ token)]
             , url = absoluteUrl
-            , body = Http.emptyBody
+            , body = body
             , expect = Http.expectJson decoder
             , timeout = Nothing
             , withCredentials = False }

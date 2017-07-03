@@ -71,7 +71,9 @@ model =
 
 -- UPDATE
 type Msg
-    = FetchPlaylists
+    = SavePlaylist Spotify.Playlist
+    | SavePlaylistResult (Result Http.Error Spotify.Playlist)
+    | FetchPlaylists
     | PlaylistResults (Result Http.Error (List Spotify.Playlist))
     | SelectPlaylist Spotify.Playlist
     | PerformSearch String
@@ -81,6 +83,11 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
+        SavePlaylistResult (Ok response) -> ({ model | selectedPlaylist = Just response }, Cmd.none)
+        SavePlaylistResult (Err _) -> (model, Cmd.none)
+        SavePlaylist playlist ->
+            ( model
+            , ( Spotify.savePlaylist (Maybe.withDefault "" model.oAuthToken) playlist SavePlaylistResult ) )
         SelectPlaylist playlist ->
             ({ model | selectedPlaylist = Just playlist }, Cmd.none)
         FetchPlaylists ->
@@ -113,7 +120,7 @@ view model =
     div [ class "container" ]
     [ h1 [ class "text-center" ] [ text "elm-mixtape" ]
     , div [ class "row" ]
-        [ div [ class "col-md-6" ] [ PlaylistEditor.view model.selectedPlaylist ]
+        [ div [ class "col-md-6" ] [ PlaylistEditor.view model.selectedPlaylist SavePlaylist ]
         , div [ class "col-md-6" ] [ searchInputView (model.oAuthToken /= Nothing)
             , Search.view model.searchResults SearchResultSelected ] ]
     , Playlists.view model.playlists FetchPlaylists SelectPlaylist

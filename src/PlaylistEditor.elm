@@ -1,24 +1,34 @@
 module PlaylistEditor exposing (view, Model)
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Events exposing (onClick)
+import Html.Attributes exposing (class, contenteditable)
 import Spotify
 
 type alias Model = Spotify.Playlist
 
-view : Maybe Model -> Html msg
-view model =
+view : Maybe Model -> (Spotify.Playlist -> msg) -> Html msg
+view model selectFn =
     case model of
         Nothing ->
             noPlaylistSelectedView
         Just playlist ->
-            editorView playlist
+            editorView playlist selectFn
 
-editorView : Model -> Html msg
-editorView model =
-    div []
-    [ h2 [] [ text model.name ]
-    , ul [ class "list-group" ] (List.map tracksView model.tracks)
-    ]
+editorView : Model -> (Spotify.Playlist -> msg) -> Html msg
+editorView model saveFn =
+    let
+        hasTracks = not (List.isEmpty model.tracks)
+    in
+        case hasTracks of
+            True ->
+                div []
+                [ h2 [ contenteditable True ] [ text model.name ]
+                , button [ class "btn btn-primary", onClick ( saveFn model ) ] [ text "Save" ]
+                , ul [ class "list-group" ] ( List.map tracksView model.tracks )
+                ]
+            False ->
+                div []
+                [ h2 [ contenteditable True ] [ text model.name ] ]
 
 tracksView : String -> Html msg
 tracksView track =
