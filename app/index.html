@@ -2,18 +2,12 @@
 <html>
     <head></head>
     <body>
+        <link rel="stylesheet" href="main.css" />
         <script src="elm.js"></script>
         <script>
-            var app = Elm.Main.fullscreen({
-                locationFragment: document.location.hash
-            });
-
-            app.ports.getParam.subscribe(function(paramName) {
-                console.log(window.Location);
-                console.log(window.Location.search);
-                app.ports.getParamResults.send("aaaa");
-                return window.location;
-            });
+        var app = Elm.Main.fullscreen({
+            locationFragment: window.location.hash
+        });
         </script>
     </body>
 </html>
