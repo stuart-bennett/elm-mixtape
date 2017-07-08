@@ -129,8 +129,7 @@ update msg model =
                     model.selectedPlaylist
 
                 newValue =
-                    old
-                    | tracks = ( searchResult.name :: old.tracks ) }
+                    { old | tracks = ( searchResult.name :: old.tracks ) }
             in
                 case model.selectedPlaylist of
                     Nothing ->
