@@ -71,9 +71,10 @@ model =
 
 -- UPDATE
 type Msg
-    = SavePlaylist Spotify.Playlist
+    = SavePlaylist PlaylistEditor.Model
     | SavePlaylistResult (Result Http.Error Spotify.Playlist)
     | FetchPlaylists
+    | PlaylistTracksResult (Result Http.Error Spotify.Tracklist)
     | PlaylistResults (Result Http.Error (List Spotify.Playlist))
     | SelectPlaylist Spotify.Playlist
     | PerformSearch String
@@ -84,7 +85,7 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         SavePlaylistResult (Ok response) ->
-            ({ model | selectedPlaylist = Just response }, Cmd.none)
+            ({ model | selectedPlaylist = Just { name = response.name, id = response.id, tracks = [] } }, Cmd.none)
 
         SavePlaylistResult (Err _) -> (model, Cmd.none)
 
@@ -92,14 +93,55 @@ update msg model =
             ( model
             , ( Spotify.savePlaylist (
                     Maybe.withDefault "" model.oAuthToken )
-                    playlist
+                    { name = playlist.name, id = playlist.id }
                     SavePlaylistResult ) )
 
         SelectPlaylist playlist ->
-            ({ model | selectedPlaylist = Just playlist }, Cmd.none)
+            ({ model
+            | selectedPlaylist =
+                Just
+                    { name = playlist.name
+                    , id = playlist.id
+                    , tracks = [] } }
+                ,
+                Spotify.getPlaylistTracks
+                ( Maybe.withDefault "" model.oAuthToken )
+                playlist.id
+                PlaylistTracksResult)
 
-        FetchPlaylists ->
+        SearchResultSelected searchResult ->
+            let
+                old = Maybe.withDefault
+                    { name = ""
+                    , id = ""
+                    , tracks = [] }
+                    model.selectedPlaylist
+
+                newValue =
+                    { old | tracks = ( searchResult.name :: old.tracks ) }
+            in
+                case model.selectedPlaylist of
+                    Nothing ->
+                        (model, Cmd.none)
+                    Just playlist ->
+                        ({ model | selectedPlaylist = Just newValue }, Cmd.none)
+
+        PlaylistTracksResult (Ok response) ->
+            let
+                old = Maybe.withDefault
+                    { name = "hljfkjd"
+                    , id = ""
+                    , tracks = ["jkjfsd", "jfksdfd"] }
+                    model.selectedPlaylist
+                new = { old | tracks = ["kjfdls", "aaaa"] }
+            in
+            ({ model | selectedPlaylist = Just new }, Cmd.none)
+
+        PlaylistTracksResult (Err _) -> (model, Cmd.none)
+
+        FetchPlaylists -> 
             (model, (getPlaylists (Maybe.withDefault "" model.oAuthToken)))
+
         PerformSearch term ->
             (model
             , ( getSearch
@@ -120,22 +162,6 @@ update msg model =
                 , error = (toString error)}}
             , Cmd.none)
 
-        SearchResultSelected searchResult ->
-            let
-                old = Maybe.withDefault
-                    { name = ""
-                    , id = ""
-                    , tracks = [] }
-                    model.selectedPlaylist
-
-                newValue =
-                    { old | tracks = ( searchResult.name :: old.tracks ) }
-            in
-                case model.selectedPlaylist of
-                    Nothing ->
-                        (model, Cmd.none)
-                    Just playlist ->
-                        ({ model | selectedPlaylist = Just newValue }, Cmd.none)
 
         SearchResults (Ok response) ->
             ({ model | searchResults = { results = response, error = "" }}, Cmd.none)

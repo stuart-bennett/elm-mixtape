@@ -1,4 +1,12 @@
-module Spotify exposing (search, savePlaylist, fetchPlaylists, SearchResult, Playlist)
+module Spotify exposing (
+    search,
+    getPlaylistTracks,
+    savePlaylist,
+    fetchPlaylists,
+    SearchResult,
+    Playlist,
+    Tracklist)
+
 import Json.Decode as Decode
 import Http exposing (..)
 import String exposing (concat)
@@ -6,6 +14,8 @@ import Querystring exposing (..)
 
 type SearchResultType = Artist
     | Track
+
+type alias Tracklist = List (String, String)
 
 type alias SearchResult =
     { name: String
@@ -17,7 +27,6 @@ type alias SearchResult =
 type alias Playlist =
     { name: String
     , id: String
-    , tracks: (List String)
     }
 
 savePlaylist : String -> Playlist -> (Result Http.Error Playlist -> msg) -> Cmd msg
@@ -48,6 +57,23 @@ fetchPlaylists token fn =
             fn
             playlistsDecoder
 
+getPlaylistTracks : String -> String -> (Result Http.Error Tracklist -> msg) -> Cmd msg
+getPlaylistTracks token playlistId fn =
+    let
+        endpoint =
+            "/users/stu.bennett/playlists/" ++
+            playlistId ++
+            "/tracks"
+    in
+        doApiRequest
+            "GET"
+            Http.emptyBody
+            endpoint
+            Querystring.empty
+            token
+            fn
+            tracklistDecoder
+
 search : String -> String -> (Result Http.Error (List SearchResult) -> msg) -> Cmd msg
 search searchTerm token fn =
     let
@@ -67,6 +93,15 @@ search searchTerm token fn =
             searchResultDecoder
 
 -- Decoders
+tracklistDecoder : Decode.Decoder Tracklist
+tracklistDecoder =
+    Decode.at["items"]
+        <| Decode.list
+        <| Decode.map2 
+        ( \x y -> (x, y) )
+        ( Decode.field "name" Decode.string )
+        ( Decode.field "uri" Decode.string )
+
 searchResultDecoder : Decode.Decoder (List SearchResult)
 searchResultDecoder =
     let
@@ -101,10 +136,9 @@ searchResultTypeDecoder val =
 
 playlistDecoder : Decode.Decoder Playlist
 playlistDecoder =
-    Decode.map3 Playlist
+    Decode.map2 Playlist
         ( Decode.field "name" Decode.string )
         ( Decode.field "id" Decode.string )
-        ( Decode.map (\_ -> []) Decode.string )
 
 playlistsDecoder : Decode.Decoder (List Playlist)
 playlistsDecoder =

@@ -4,9 +4,12 @@ import Html.Events exposing (onClick)
 import Html.Attributes exposing (class, contenteditable)
 import Spotify
 
-type alias Model = Spotify.Playlist
+type alias Model =
+    { name : String
+    , id : String
+    , tracks : (List String) }
 
-view : Maybe Model -> (Spotify.Playlist -> msg) -> Html msg
+view : Maybe Model -> (Model -> msg) -> Html msg
 view model selectFn =
     case model of
         Nothing ->
@@ -14,7 +17,7 @@ view model selectFn =
         Just playlist ->
             editorView playlist selectFn
 
-editorView : Model -> (Spotify.Playlist -> msg) -> Html msg
+editorView : Model -> (Model -> msg) -> Html msg
 editorView model saveFn =
     let
         hasTracks = not (List.isEmpty model.tracks)
@@ -24,11 +27,11 @@ editorView model saveFn =
                 div []
                 [ h2 [ contenteditable True ] [ text model.name ]
                 , button [ class "btn btn-primary", onClick ( saveFn model ) ] [ text "Save" ]
-                , ul [ class "list-group" ] ( List.map tracksView model.tracks )
-                ]
+                , ul [ class "list-group" ] ( List.map tracksView model.tracks ) ]
             False ->
                 div []
-                [ h2 [ contenteditable True ] [ text model.name ] ]
+                [ h2 [ contenteditable True ] [ text model.name ]
+                , p [] [ text "No tracks yet!" ] ]
 
 tracksView : String -> Html msg
 tracksView track =
