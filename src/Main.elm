@@ -104,11 +104,11 @@ update msg model =
                     Nothing -> Cmd.none
                     Just sp -> Spotify.savePlaylistTracks
                         ( Maybe.withDefault "" model.oAuthToken )
-                        sp.id
+                        response.id
                         ( List.map Tuple.second sp.tracks )
                         SavePlaylistTracks
             in
-                ({ model | selectedPlaylist = playlist }, Cmd.none)
+                ({ model | selectedPlaylist = playlist }, cmd)
 
         SavePlaylistResult (Err _) -> (model, Cmd.none)
 

@@ -9,6 +9,7 @@ module Spotify exposing (
     Tracklist)
 
 import Json.Decode as Decode
+import Json.Encode as Encode
 import Http exposing (..)
 import String exposing (concat)
 import Querystring exposing (..)
@@ -58,22 +59,31 @@ fetchPlaylists token fn =
             fn
             playlistsDecoder
 
-savePlaylistTracks : String -> String -> List (String) -> (Result Http.Error String -> msg) -> Cmd msg
+savePlaylistTracks : String -> String -> (List String) -> (Result Http.Error String -> msg) -> Cmd msg
 savePlaylistTracks token playlistId trackUris fn =
     let
         endpoint =
             "/users/stu.bennett/playlists/" ++
             playlistId ++
             "/tracks"
+
+        body = ( Http.stringBody
+            "application/json"
+            ( Encode.encode 0 ( tracklistEncoder trackUris ) ) )
     in
         doApiRequest
             "POST"
-            Http.emptyBody
+            body
             endpoint
             Querystring.empty
             token
             fn
             Decode.string
+
+tracklistEncoder : (List String) -> Encode.Value
+tracklistEncoder tracklist =
+    Encode.object
+    [ ("uris", Encode.list ( List.map Encode.string tracklist ) ) ]
 
 getPlaylistTracks : String -> String -> (Result Http.Error Tracklist -> msg) -> Cmd msg
 getPlaylistTracks token playlistId fn =
