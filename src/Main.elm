@@ -118,7 +118,7 @@ update msg model =
                     model.selectedPlaylist
 
                 newValue =
-                    { old | tracks = ( searchResult.name :: old.tracks ) }
+                    { old | tracks = ( ( searchResult.name, searchResult.uri ) :: old.tracks ) }
             in
                 case model.selectedPlaylist of
                     Nothing ->
@@ -127,17 +127,16 @@ update msg model =
                         ({ model | selectedPlaylist = Just newValue }, Cmd.none)
 
         PlaylistTracksResult (Ok response) ->
-            let
-                old = Maybe.withDefault
-                    { name = "hljfkjd"
-                    , id = ""
-                    , tracks = ["jkjfsd", "jfksdfd"] }
-                    model.selectedPlaylist
-                new = { old | tracks = ["kjfdls", "aaaa"] }
-            in
-            ({ model | selectedPlaylist = Just new }, Cmd.none)
+            case model.selectedPlaylist of
+                Nothing -> (model, Cmd.none)
+                Just playlist ->
+                    ({ model
+                    | selectedPlaylist = Just
+                        { name = playlist.name
+                        , id = playlist.id
+                        , tracks = ( List.append playlist.tracks response ) } }, Cmd.none)
 
-        PlaylistTracksResult (Err _) -> (model, Cmd.none)
+        PlaylistTracksResult (Err error) -> ({ model | playlists = { playlists = [], error = (toString error) } }, Cmd.none)
 
         FetchPlaylists -> 
             (model, (getPlaylists (Maybe.withDefault "" model.oAuthToken)))

@@ -97,10 +97,10 @@ tracklistDecoder : Decode.Decoder Tracklist
 tracklistDecoder =
     Decode.at["items"]
         <| Decode.list
-        <| Decode.map2 
+        <| Decode.map2
         ( \x y -> (x, y) )
-        ( Decode.field "name" Decode.string )
-        ( Decode.field "uri" Decode.string )
+        ( Decode.at ["track"] <| ( Decode.field "name" Decode.string ) )
+        ( Decode.at ["track"] <| ( Decode.field "uri" Decode.string ) )
 
 searchResultDecoder : Decode.Decoder (List SearchResult)
 searchResultDecoder =
