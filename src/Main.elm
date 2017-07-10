@@ -85,29 +85,38 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         SavePlaylistResult (Ok response) ->
-            ({ model | selectedPlaylist = Just { name = response.name, id = response.id, tracks = [] } }, Cmd.none)
+            let
+                playlist = Just
+                    { name = response.name
+                    , id = response.id
+                    , tracks = [] }
+            in
+                ({ model | selectedPlaylist = playlist }, Cmd.none)
 
         SavePlaylistResult (Err _) -> (model, Cmd.none)
 
         SavePlaylist playlist ->
-            ( model
-            , ( Spotify.savePlaylist (
+            let
+                cmd = Spotify.savePlaylist (
                     Maybe.withDefault "" model.oAuthToken )
                     { name = playlist.name, id = playlist.id }
-                    SavePlaylistResult ) )
+                    SavePlaylistResult
+            in
+                ( model, cmd )
 
         SelectPlaylist playlist ->
-            ({ model
-            | selectedPlaylist =
-                Just
+            let
+                newPlaylist = Just
                     { name = playlist.name
                     , id = playlist.id
-                    , tracks = [] } }
-                ,
-                Spotify.getPlaylistTracks
-                ( Maybe.withDefault "" model.oAuthToken )
-                playlist.id
-                PlaylistTracksResult)
+                    , tracks = [] }
+                cmd =
+                    Spotify.getPlaylistTracks
+                    ( Maybe.withDefault "" model.oAuthToken )
+                    playlist.id
+                    PlaylistTracksResult
+            in
+                ({ model | selectedPlaylist = newPlaylist }, cmd)
 
         SearchResultSelected searchResult ->
             let
@@ -134,36 +143,39 @@ update msg model =
                     | selectedPlaylist = Just
                         { name = playlist.name
                         , id = playlist.id
-                        , tracks = ( List.append playlist.tracks response ) } }, Cmd.none)
+                        , tracks = ( List.append playlist.tracks response ) } },
+                    Cmd.none)
 
-        PlaylistTracksResult (Err error) -> ({ model | playlists = { playlists = [], error = (toString error) } }, Cmd.none)
+        PlaylistTracksResult (Err error) ->
+            ({ model | playlists =
+                { playlists = []
+                , error = (toString error) } },
+            Cmd.none)
 
         FetchPlaylists -> 
             (model, (getPlaylists (Maybe.withDefault "" model.oAuthToken)))
 
         PerformSearch term ->
-            (model
-            , ( getSearch
-                term
-                ( Maybe.withDefault "" model.oAuthToken)))
+            let
+                cmd = getSearch term ( Maybe.withDefault "" model.oAuthToken)
+            in
+                (model, cmd)
 
         PlaylistResults (Ok response) ->
-            ({ model
-            | playlists =
-                { playlists = response
-                , error = "" }},
-            Cmd.none)
+            let
+                playlists = { playlists = response, error = "" }
+            in
+                ({ model | playlists = playlists }, Cmd.none)
 
         PlaylistResults (Err error) ->
-            ({ model
-            | playlists =
-                { playlists = []
-                , error = (toString error)}}
-            , Cmd.none)
-
+            let
+                playlists = { playlists = [], error = (toString error)}
+            in
+                ({ model | playlists = playlists }, Cmd.none)
 
         SearchResults (Ok response) ->
             ({ model | searchResults = { results = response, error = "" }}, Cmd.none)
+
         SearchResults (Err error) ->
             ({ model | searchResults = { results = [], error = (toString error) }}, Cmd.none)
 
