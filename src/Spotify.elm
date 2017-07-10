@@ -3,6 +3,7 @@ module Spotify exposing (
     getPlaylistTracks,
     savePlaylist,
     fetchPlaylists,
+    savePlaylistTracks,
     SearchResult,
     Playlist,
     Tracklist)
@@ -56,6 +57,23 @@ fetchPlaylists token fn =
             token
             fn
             playlistsDecoder
+
+savePlaylistTracks : String -> String -> List (String) -> (Result Http.Error String -> msg) -> Cmd msg
+savePlaylistTracks token playlistId trackUris fn =
+    let
+        endpoint =
+            "/users/stu.bennett/playlists/" ++
+            playlistId ++
+            "/tracks"
+    in
+        doApiRequest
+            "POST"
+            Http.emptyBody
+            endpoint
+            Querystring.empty
+            token
+            fn
+            Decode.string
 
 getPlaylistTracks : String -> String -> (Result Http.Error Tracklist -> msg) -> Cmd msg
 getPlaylistTracks token playlistId fn =

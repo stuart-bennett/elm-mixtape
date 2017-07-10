@@ -74,6 +74,7 @@ type Msg
     = SavePlaylist PlaylistEditor.Model
     | SavePlaylistResult (Result Http.Error Spotify.Playlist)
     | FetchPlaylists
+    | SavePlaylistTracks (Result Http.Error String)
     | PlaylistTracksResult (Result Http.Error Spotify.Tracklist)
     | PlaylistResults (Result Http.Error (List Spotify.Playlist))
     | SelectPlaylist Spotify.Playlist
@@ -84,12 +85,28 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
+        SavePlaylistTracks (Ok response) ->
+            (model, Cmd.none)
+
+        SavePlaylistTracks (Err error) ->
+            (model, Cmd.none)
+
         SavePlaylistResult (Ok response) ->
             let
-                playlist = Just
-                    { name = response.name
-                    , id = response.id
-                    , tracks = [] }
+                playlist = case model.selectedPlaylist of
+                    Nothing -> Nothing
+                    Just sp -> Just
+                        { name = response.name
+                        , id = response.id
+                        , tracks = sp.tracks }
+
+                cmd = case model.selectedPlaylist of
+                    Nothing -> Cmd.none
+                    Just sp -> Spotify.savePlaylistTracks
+                        ( Maybe.withDefault "" model.oAuthToken )
+                        sp.id
+                        ( List.map Tuple.second sp.tracks )
+                        SavePlaylistTracks
             in
                 ({ model | selectedPlaylist = playlist }, Cmd.none)
 
@@ -110,8 +127,7 @@ update msg model =
                     { name = playlist.name
                     , id = playlist.id
                     , tracks = [] }
-                cmd =
-                    Spotify.getPlaylistTracks
+                cmd = Spotify.getPlaylistTracks
                     ( Maybe.withDefault "" model.oAuthToken )
                     playlist.id
                     PlaylistTracksResult
