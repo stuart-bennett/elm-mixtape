@@ -6,7 +6,7 @@ module Spotify exposing (
     savePlaylistTracks,
     SearchResult,
     Playlist,
-    Tracklist)
+    PlaylistTrack)
 
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -17,13 +17,16 @@ import Querystring exposing (..)
 type SearchResultType = Artist
     | Track
 
-type alias Tracklist = List (String, String)
+type alias PlaylistTrack =
+    { title : String
+    , uri : String
+    , isNew : Bool }
 
 type alias SearchResult =
-    { name: String
-    , id: String
-    , type_: SearchResultType
-    , uri: String
+    { name : String
+    , id : String
+    , type_ : SearchResultType
+    , uri : String
     }
 
 type alias Playlist =
@@ -78,14 +81,14 @@ savePlaylistTracks token playlistId trackUris fn =
             Querystring.empty
             token
             fn
-            Decode.string
+            ( Decode.field "snapshot_id" Decode.string )
 
 tracklistEncoder : (List String) -> Encode.Value
 tracklistEncoder tracklist =
     Encode.object
     [ ("uris", Encode.list ( List.map Encode.string tracklist ) ) ]
 
-getPlaylistTracks : String -> String -> (Result Http.Error Tracklist -> msg) -> Cmd msg
+getPlaylistTracks : String -> String -> (Result Http.Error (List PlaylistTrack) -> msg) -> Cmd msg
 getPlaylistTracks token playlistId fn =
     let
         endpoint =
@@ -121,12 +124,12 @@ search searchTerm token fn =
             searchResultDecoder
 
 -- Decoders
-tracklistDecoder : Decode.Decoder Tracklist
+tracklistDecoder : Decode.Decoder (List PlaylistTrack)
 tracklistDecoder =
     Decode.at["items"]
         <| Decode.list
         <| Decode.map2
-        ( \x y -> (x, y) )
+        ( \x y -> { title = x, uri = y, isNew = False } )
         ( Decode.at ["track"] <| ( Decode.field "name" Decode.string ) )
         ( Decode.at ["track"] <| ( Decode.field "uri" Decode.string ) )
 

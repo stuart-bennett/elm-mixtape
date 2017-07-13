@@ -7,7 +7,7 @@ import Spotify
 type alias Model =
     { name : String
     , id : String
-    , tracks : Spotify.Tracklist }
+    , tracks : List Spotify.PlaylistTrack }
 
 view : Maybe Model -> (Model -> msg) -> Html msg
 view model selectFn =
@@ -34,11 +34,12 @@ editorView model saveFn =
                 [ h2 [ contenteditable True ] [ text model.name ]
                 , p [] [ text "No tracks yet!" ] ]
 
-tracksView : (String, String) -> Html msg
+tracksView : Spotify.PlaylistTrack -> Html msg
 tracksView track =
     li [ class "list-group-item" ]
-        [ div [] [ text ( Tuple.first track ) ]
-        , div [] [ text ( Tuple.second track ) ] ]
+        [ div [] [ text track.title ]
+        , div [] [ text track.uri ]
+        , div [] [ text (toString track.isNew) ] ]
 
 noPlaylistSelectedView : Html msg
 noPlaylistSelectedView =

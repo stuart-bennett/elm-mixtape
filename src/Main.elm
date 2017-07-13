@@ -67,7 +67,7 @@ type Msg
     | SavePlaylistResult (Result Http.Error Spotify.Playlist)
     | FetchPlaylists
     | SavePlaylistTracks (Result Http.Error String)
-    | PlaylistTracksResult (Result Http.Error Spotify.Tracklist)
+    | PlaylistTracksResult (Result Http.Error (List Spotify.PlaylistTrack))
     | PlaylistResults (Result Http.Error (List Spotify.Playlist))
     | SelectPlaylist Spotify.Playlist
     | PerformSearch String
@@ -78,7 +78,13 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         SavePlaylistTracks (Ok response) ->
-            (model, Cmd.none)
+            let
+                new = case model.selectedPlaylist of
+                    Nothing -> { name = "", id = "", tracks = [] }
+                    Just sp ->
+                        { sp | tracks = ( List.map (\x -> { title = x.title, uri = x.uri, isNew = False }) sp.tracks ) }
+            in
+                ({ model | selectedPlaylist = Just new }, Cmd.none)
 
         SavePlaylistTracks (Err error) ->
             (model, Cmd.none)
@@ -97,7 +103,7 @@ update msg model =
                     Just sp -> Spotify.savePlaylistTracks
                         ( Maybe.withDefault "" model.oAuthToken )
                         response.id
-                        ( List.map Tuple.second sp.tracks )
+                        ( sp.tracks |> List.filter (\x -> x.isNew) |> List.map (\x -> x.uri) )
                         SavePlaylistTracks
             in
                 ({ model | selectedPlaylist = playlist }, cmd)
@@ -113,7 +119,7 @@ update msg model =
                             Spotify.savePlaylistTracks
                             ( Maybe.withDefault "" model.oAuthToken )
                             sp.id
-                            ( List.map Tuple.second sp.tracks )
+                            ( sp.tracks |> List.filter (\x -> x.isNew) |> List.map (\x -> x.uri) )
                             SavePlaylistTracks
 
                     True ->
@@ -146,7 +152,7 @@ update msg model =
                     model.selectedPlaylist
 
                 newValue =
-                    { old | tracks = ( ( searchResult.name, searchResult.uri ) :: old.tracks ) }
+                    { old | tracks = ( { title = searchResult.name, uri = searchResult.uri, isNew = True } :: old.tracks ) }
             in
                 case model.selectedPlaylist of
                     Nothing ->
