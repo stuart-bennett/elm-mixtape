@@ -18,14 +18,6 @@ main =
         , update = update
        }
 
-getPlaylists : String -> Cmd Msg
-getPlaylists token =
-    Spotify.fetchPlaylists token PlaylistResults
-
-getSearch : String -> String -> Cmd Msg
-getSearch searchTerm token =
-    Spotify.search searchTerm token SearchResults
-
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -168,12 +160,15 @@ update msg model =
                 , error = (toString error) } },
             Cmd.none)
 
-        FetchPlaylists -> 
-            (model, (getPlaylists (Maybe.withDefault "" model.oAuthToken)))
+        FetchPlaylists ->
+            (model, Spotify.fetchPlaylists (Maybe.withDefault "" model.oAuthToken) PlaylistResults)
 
         PerformSearch term ->
             let
-                cmd = getSearch term ( Maybe.withDefault "" model.oAuthToken)
+                cmd = Spotify.search
+                    term
+                    (Maybe.withDefault "" model.oAuthToken)
+                    SearchResults
             in
                 (model, cmd)
 
