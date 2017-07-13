@@ -26,6 +26,7 @@ editorView model saveFn =
             True ->
                 div []
                 [ h2 [ contenteditable True ] [ text model.name ]
+                , h3 [] [ text model.id ]
                 , button [ class "btn btn-primary", onClick ( saveFn model ) ] [ text "Save" ]
                 , ul [ class "list-group" ] ( List.map tracksView model.tracks ) ]
             False ->

@@ -106,10 +106,21 @@ update msg model =
 
         SavePlaylist playlist ->
             let
-                cmd = Spotify.savePlaylist (
-                    Maybe.withDefault "" model.oAuthToken )
-                    { name = playlist.name, id = playlist.id }
-                    SavePlaylistResult
+                cmd = case (String.isEmpty playlist.id) of
+                    False -> case model.selectedPlaylist of
+                        Nothing -> Cmd.none
+                        Just sp ->
+                            Spotify.savePlaylistTracks
+                            ( Maybe.withDefault "" model.oAuthToken )
+                            sp.id
+                            ( List.map Tuple.second sp.tracks )
+                            SavePlaylistTracks
+
+                    True ->
+                        Spotify.savePlaylist
+                        ( Maybe.withDefault "" model.oAuthToken )
+                        { name = playlist.name, id = playlist.id }
+                        SavePlaylistResult
             in
                 ( model, cmd )
 
