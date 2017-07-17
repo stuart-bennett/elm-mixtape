@@ -33,16 +33,24 @@ init flags =
     let
         -- Tokens appear in the fragment during oAuth "implicit" flow
         queryStringItems = Querystring.getItems flags.locationFragment
+        oAuthToken = Tuple.second
+            <| Maybe.withDefault (Nothing, Nothing)
+            <| List.head queryStringItems
+
+        cmd = case oAuthToken of
+            Nothing-> Cmd.none
+            Just token ->
+                Spotify.fetchPlaylists
+                token
+                PlaylistResults
     in
     (
         { searchResults = { results = [], error = "" }
         , playlists = { playlists = [], error = "" }
         , selectedPlaylist = Nothing
-        , oAuthToken = Tuple.second
-            <| Maybe.withDefault (Nothing, Nothing)
-            <| List.head queryStringItems
+        , oAuthToken = oAuthToken
         },
-        Cmd.none
+        cmd
     )
 
 -- MODEL
