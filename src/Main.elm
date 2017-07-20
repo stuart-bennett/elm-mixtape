@@ -133,7 +133,7 @@ update msg model =
                     True ->
                         Spotify.savePlaylist
                         ( Maybe.withDefault "" model.oAuthToken )
-                        { name = playlist.name, id = playlist.id }
+                        { name = playlist.name, id = playlist.id, image = Nothing }
                         SavePlaylistResult
             in
                 ( model, cmd )
@@ -218,14 +218,14 @@ update msg model =
 -- VIEW
 view : Model -> Html Msg
 view model =
-    div [ class "container" ]
-    [ h1 [ class "text-center" ] [ text "elm-mixtape" ]
-    , div [ class "row" ]
-        [ div [ class "col-md-6" ] [ PlaylistEditor.view model.selectedPlaylist SavePlaylist ]
-        , div [ class "col-md-6" ] [ searchInputView (model.oAuthToken /= Nothing)
-            , Search.view model.searchResults SearchResultSelected ] ]
-    , Playlists.view model.playlists FetchPlaylists SelectPlaylist
-    ]
+        div [ class "container" ]
+        [ h1 [ class "text-center" ] [ text "elm-mixtape" ]
+        , div [ class "row" ]
+            [ div [ class "col-md-6" ] [ PlaylistEditor.view model.selectedPlaylist SavePlaylist ]
+            , div [ class "col-md-6" ] [ searchInputView (model.oAuthToken /= Nothing)
+                , Search.view model.searchResults SearchResultSelected ] ]
+        , Playlists.view model.playlists FetchPlaylists SelectPlaylist
+        ]
 
 searchInputView : Bool -> Html Msg
 searchInputView isAuthorised =

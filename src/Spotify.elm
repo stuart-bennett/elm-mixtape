@@ -32,6 +32,7 @@ type alias SearchResult =
 type alias Playlist =
     { name: String
     , id: String
+    , image: Maybe String
     }
 
 savePlaylist : String -> Playlist -> (Result Http.Error Playlist -> msg) -> Cmd msg
@@ -167,9 +168,10 @@ searchResultTypeDecoder val =
 
 playlistDecoder : Decode.Decoder Playlist
 playlistDecoder =
-    Decode.map2 Playlist
+    Decode.map3 Playlist
         ( Decode.field "name" Decode.string )
         ( Decode.field "id" Decode.string )
+        ( Decode.at ["images"] <| Decode.map List.head <| Decode.list ( Decode.field "url" Decode.string ) )
 
 playlistsDecoder : Decode.Decoder (List Playlist)
 playlistsDecoder =

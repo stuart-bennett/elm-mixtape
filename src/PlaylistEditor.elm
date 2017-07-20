@@ -26,7 +26,6 @@ editorView model saveFn =
             True ->
                 div []
                 [ h2 [ contenteditable True ] [ text model.name ]
-                , h3 [] [ text model.id ]
                 , button [ class "btn btn-primary", onClick ( saveFn model ) ] [ text "Save" ]
                 , ul [ class "list-group" ] ( List.map tracksView model.tracks ) ]
             False ->
@@ -37,9 +36,7 @@ editorView model saveFn =
 tracksView : Spotify.PlaylistTrack -> Html msg
 tracksView track =
     li [ class "list-group-item" ]
-        [ div [] [ text track.title ]
-        , div [] [ text track.uri ]
-        , div [] [ text (toString track.isNew) ] ]
+        [ div [] [ text track.title ] ]
 
 noPlaylistSelectedView : Html msg
 noPlaylistSelectedView =
