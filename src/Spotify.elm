@@ -6,7 +6,8 @@ module Spotify exposing (
     savePlaylistTracks,
     SearchResult,
     Playlist,
-    PlaylistTrack)
+    PlaylistTrack,
+    ImageSize(..))
 
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -27,6 +28,7 @@ type alias SearchResult =
     , id : String
     , type_ : SearchResultType
     , uri : String
+    , images : List Image
     }
 
 type alias Playlist =
@@ -34,6 +36,13 @@ type alias Playlist =
     , id: String
     , image: Maybe String
     }
+
+type ImageSize
+    = Large
+    | Medium
+    | Small
+
+type alias Image = (String, ImageSize)
 
 savePlaylist : String -> Playlist -> (Result Http.Error Playlist -> msg) -> Cmd msg
 savePlaylist token playlist fn =
@@ -112,7 +121,7 @@ search searchTerm token fn =
         endpoint = "/search"
         querystring = (Querystring.convert
             [ ("q", searchTerm)
-            , ("type", "artist,track")
+            , ("type", "track")
             , ("market", "GB") ])
     in
         doApiRequest
@@ -137,28 +146,36 @@ tracklistDecoder =
 searchResultDecoder : Decode.Decoder (List SearchResult)
 searchResultDecoder =
     let
-        artistDecoder =
-            Decode.at["artists", "items"]
-                <| Decode.list
-                <| Decode.map4 SearchResult
-                ( Decode.field "name" Decode.string )
-                ( Decode.field "id" Decode.string )
-                ( Decode.field
-                    "type"
-                    ( Decode.map searchResultTypeDecoder Decode.string) )
-                ( Decode.field "uri" Decode.string )
         trackDecoder =
             Decode.at["tracks", "items"]
                 <| Decode.list
-                <| Decode.map4 SearchResult
+                <| Decode.map5 SearchResult
                 ( Decode.field "name" Decode.string )
                 ( Decode.field "id" Decode.string )
                 ( Decode.field
                     "type"
                     (Decode.map searchResultTypeDecoder Decode.string) )
                 ( Decode.field "uri" Decode.string )
+                ( Decode.at ["album", "images"] <| imagesDecoder )
     in
         trackDecoder
+
+imagesDecoder : Decode.Decoder (List Image)
+imagesDecoder =
+    Decode.list imageDecoder
+
+imageDecoder : Decode.Decoder Image
+imageDecoder =
+    Decode.map2 (\url width -> (url, width))
+    ( Decode.field "url" Decode.string )
+    ( Decode.field "width" (Decode.map imageSizeDecoder Decode.int ))
+
+imageSizeDecoder : Int -> ImageSize
+imageSizeDecoder val =
+    case val of
+        640 -> Large
+        300 -> Medium
+        _ -> Small
 
 searchResultTypeDecoder : String -> SearchResultType
 searchResultTypeDecoder val =

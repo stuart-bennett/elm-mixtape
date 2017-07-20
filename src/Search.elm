@@ -19,13 +19,23 @@ view model selectFn =
             True ->
                 span [] [ text model.error ]
             False ->
-                ul [ class "list-group" ] 
+                ul [ class "unstyled-list" ]
                     ( List.map (\x -> (listItemView x selectFn)) model.results)
 
 listItemView : Spotify.SearchResult -> (Spotify.SearchResult -> msg) -> Html msg
 listItemView model selectFn =
-    li [  class "list-group-item selectable"
-        , onClick (selectFn model) ]
-        [ h1 [ class "h4" ] [ text model.name ]
-        , span [] [ text ("type: " ++ (toString model.type_)) ]
-        , span [] [ text model.id ]]
+    let
+        smallImage = model.images
+            |> List.filter (\x -> (Tuple.second x) == Spotify.Small)
+            |> List.head
+        image = case smallImage of
+            Nothing -> ""
+            Just tuple -> Tuple.first tuple
+    in
+        li [ class "media selectable"
+            , onClick (selectFn model) ]
+            [ div [ class "media-left" ] [ img [ src image ] [] ]
+            , div [ class "media-body" ]
+                [ h1 [ class "h4" ] [ text model.name ]
+                , span [] [ text ("type: " ++ (toString model.type_)) ]
+                , span [] [ text model.id ] ] ]
