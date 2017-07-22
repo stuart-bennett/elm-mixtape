@@ -27,7 +27,7 @@ editorView model saveFn =
                 div []
                 [ h2 [ contenteditable True ] [ text model.name ]
                 , button [ class "btn btn-primary", onClick ( saveFn model ) ] [ text "Save" ]
-                , ul [ class "list-group" ] ( List.map tracksView model.tracks ) ]
+                , ul [ class "list-unstyled" ] ( List.map tracksView model.tracks ) ]
             False ->
                 div []
                 [ h2 [ contenteditable True ] [ text model.name ]
@@ -44,11 +44,11 @@ tracksView track =
             Just tuple -> Tuple.first tuple
     in
         li
-        [ class "list-group-item" ]
+        [ class "" ]
         [ div [ class "media" ]
             [ div [ class "media-left" ] [ img [ src image ] [] ]
             , div [ class "media-body" ]
-                [ h1 [ class "h4" ] [ text track.title ] ] ] ]
+                [ h1 [ class "h5" ] [ text track.title ] ] ] ]
 
 noPlaylistSelectedView : Html msg
 noPlaylistSelectedView =

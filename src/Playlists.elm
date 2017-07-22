@@ -16,14 +16,14 @@ itemView playlist selectFn =
             Nothing -> ""
             Just img -> img
     in
-        li [ class "col-md-4 selectable"
+        li [ class "selectable"
             , onClick (selectFn playlist)
             , style [ ("background", "kljfldksf") ] ]
         [ div
-            [ class "panel panel-default" ]
+            []
             [ div
-                [ class "panel-heading" ] 
-                [ h1 [ class "h4 panel-title" ] [ text playlist.name ] ]
+                []
+                [ h1 [ class "h4" ] [ text playlist.name ] ]
             , button
                 [ class "btn btn-primary hide", onClick (selectFn playlist) ]
                 [ text "Select" ] ] ]
