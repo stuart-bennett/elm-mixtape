@@ -153,20 +153,20 @@ update msg model =
 
         SearchResultSelected searchResult ->
             let
-                old = Maybe.withDefault
-                    { name = ""
-                    , id = ""
-                    , tracks = [] }
-                    model.selectedPlaylist
-
-                newValue =
-                    { old | tracks = ( { title = searchResult.name, uri = searchResult.uri, isNew = True } :: old.tracks ) }
+                newValue = case model.selectedPlaylist of
+                    Nothing -> Nothing
+                    Just sp ->
+                        Just { sp
+                        | tracks =
+                            { title = searchResult.name
+                            , uri = searchResult.uri
+                            , isNew = True } :: sp.tracks }
             in
-                case model.selectedPlaylist of
+                case newValue of
                     Nothing ->
                         (model, Cmd.none)
                     Just playlist ->
-                        ({ model | selectedPlaylist = Just newValue }, Cmd.none)
+                        ({ model | selectedPlaylist = Just playlist }, Cmd.none)
 
         PlaylistTracksResult (Ok response) ->
             case model.selectedPlaylist of
