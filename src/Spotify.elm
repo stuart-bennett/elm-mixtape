@@ -21,6 +21,7 @@ type SearchResultType = Artist
 type alias PlaylistTrack =
     { title : String
     , uri : String
+    , images: List Image
     , isNew : Bool }
 
 type alias SearchResult =
@@ -138,10 +139,11 @@ tracklistDecoder : Decode.Decoder (List PlaylistTrack)
 tracklistDecoder =
     Decode.at["items"]
         <| Decode.list
-        <| Decode.map2
-        ( \x y -> { title = x, uri = y, isNew = False } )
-        ( Decode.at ["track"] <| ( Decode.field "name" Decode.string ) )
-        ( Decode.at ["track"] <| ( Decode.field "uri" Decode.string ) )
+        <| Decode.map3
+            ( \title uri images -> { title = title, uri = uri, images = images, isNew = False } )
+            ( Decode.at ["track"] <| ( Decode.field "name" Decode.string ) )
+            ( Decode.at ["track"] <| ( Decode.field "uri" Decode.string ) )
+            ( Decode.at ["track", "album", "images"] <| imagesDecoder )
 
 searchResultDecoder : Decode.Decoder (List SearchResult)
 searchResultDecoder =

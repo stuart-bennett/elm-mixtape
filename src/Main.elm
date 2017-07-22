@@ -90,7 +90,7 @@ update msg model =
                 new = case model.selectedPlaylist of
                     Nothing -> { name = "", id = "", tracks = [] }
                     Just sp ->
-                        { sp | tracks = ( List.map (\x -> { title = x.title, uri = x.uri, isNew = False }) sp.tracks ) }
+                        { sp | tracks = ( List.map (\x -> { title = x.title, uri = x.uri, images = x.images, isNew = False }) sp.tracks ) }
             in
                 ({ model | selectedPlaylist = Just new }, Cmd.none)
 
@@ -160,6 +160,7 @@ update msg model =
                         | tracks =
                             { title = searchResult.name
                             , uri = searchResult.uri
+                            , images = searchResult.images
                             , isNew = True } :: sp.tracks }
             in
                 case newValue of

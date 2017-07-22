@@ -1,7 +1,7 @@
 module PlaylistEditor exposing (view, Model)
 import Html exposing (..)
 import Html.Events exposing (onClick)
-import Html.Attributes exposing (class, contenteditable)
+import Html.Attributes exposing (class, contenteditable, src)
 import Spotify
 
 type alias Model =
@@ -35,8 +35,20 @@ editorView model saveFn =
 
 tracksView : Spotify.PlaylistTrack -> Html msg
 tracksView track =
-    li [ class "list-group-item" ]
-        [ div [] [ text track.title ] ]
+    let
+        smallImage = track.images
+            |> List.filter (\x -> (Tuple.second x) == Spotify.Small)
+            |> List.head
+        image = case smallImage of
+            Nothing -> ""
+            Just tuple -> Tuple.first tuple
+    in
+        li
+        [ class "list-group-item" ]
+        [ div [ class "media" ]
+            [ div [ class "media-left" ] [ img [ src image ] [] ]
+            , div [ class "media-body" ]
+                [ h1 [ class "h4" ] [ text track.title ] ] ] ]
 
 noPlaylistSelectedView : Html msg
 noPlaylistSelectedView =
