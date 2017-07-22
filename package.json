@@ -16,11 +16,10 @@
     "url": "https://github.com/stuart-bennett/elm-mixtape/issues"
   },
   "homepage": "https://github.com/stuart-bennett/elm-mixtape#readme",
-  "dependencies": {
-    "bootstrap": "^3.3.7"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "bootstrap": "^4.0.0-alpha.6",
     "gulp": "^3.9.1",
-    "gulp-less": "^3.3.2"
+    "gulp-sass": "^3.1.0"
   }
 }

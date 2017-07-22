@@ -1,11 +1,11 @@
 let gulp = require("gulp"),
-    less = require("gulp-less");
+    sass = require("gulp-sass");
 
-gulp.task("less", () =>
-    gulp.src("./src/less/main.less")
-        .pipe(less({
-            paths: ["./node_modules/bootstrap/less"]
-        }))
+gulp.task("sass", () =>
+    gulp.src("./src/scss/main.scss")
+        .pipe(sass({
+            includePaths: ["./node_modules/bootstrap/scss"]
+        })).on("error", sass.logError)
         .pipe(gulp.dest("./app")));
 
-gulp.task("default", ["less"]);
+gulp.task("default", ["sass"]);

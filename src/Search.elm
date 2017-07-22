@@ -19,7 +19,7 @@ view model selectFn =
             True ->
                 span [] [ text model.error ]
             False ->
-                ul [ class "list-unstyled" ]
+                ul [ class "list-unstyled row" ]
                     ( List.map (\x -> (listItemView x selectFn)) model.results)
 
 listItemView : Spotify.SearchResult -> (Spotify.SearchResult -> msg) -> Html msg
@@ -32,10 +32,10 @@ listItemView model selectFn =
             Nothing -> ""
             Just tuple -> Tuple.first tuple
     in
-        li [ class "col-md-4 selectable searchResult"
+        li [ class "col-4"] [ div [ class "card selectable searchResult"
             , onClick (selectFn model) ]
-            [ img [ class "searchResult-image", src image ] []
-            , div [ class "" ]
+            [ img [ class "card-img-top searchResult-image", src image ] []
+            , div [ class "card-block" ]
                 [ h1 [ class "h5" ] [ text model.name ]
                 , span [] [ text ("type: " ++ (toString model.type_)) ]
-                , span [] [ text model.id ] ] ]
+                , span [] [ text model.id ] ] ] ]

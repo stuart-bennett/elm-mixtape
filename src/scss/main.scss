@@ -1,20 +1,20 @@
 @import "bootstrap";
 
-@color1: #E5E4E6;
-@color2: #D8D7D4;
-@color3: #BFB7B2;
+$color1: #E5E4E6;
+$color2: #D8D7D4;
+$color3: #BFB7B2;
 body {
-    color: @color3;
-    background: @color2;
+    color: $color3;
+    background: $color2;
 }
 
 .selectable {
     cursor: pointer;
     &:hover {
-        color: darken(@color2, 5%);
-        background: lighten(@color2, 10%);
     }
 }
+
+.hide { display: none; }
 
 .searchResult {
     max-height: 230px;
