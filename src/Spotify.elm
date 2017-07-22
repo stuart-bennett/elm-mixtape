@@ -1,11 +1,13 @@
 module Spotify exposing (
     search,
+    currentUser,
     getPlaylistTracks,
     savePlaylist,
     fetchPlaylists,
     savePlaylistTracks,
     trackFromSearchResult,
     existingTrack,
+    User,
     SearchResult,
     Playlist,
     PlaylistTrack,
@@ -19,6 +21,11 @@ import Querystring exposing (..)
 
 type SearchResultType = Artist
     | Track
+
+type alias User =
+    { id : String
+    , linkToProfile : String
+    , images : List Image }
 
 type alias PlaylistTrack =
     { title : String
@@ -60,6 +67,20 @@ type ImageSize
     | Small
 
 type alias Image = (String, ImageSize)
+
+currentUser : String -> (Result Http.Error User -> msg) -> Cmd msg
+currentUser token fn =
+    let
+        endpoint = "/me"
+    in
+        doApiRequest
+            "GET"
+            Http.emptyBody
+            endpoint
+            Querystring.empty
+            token
+            fn
+            userDecoder
 
 savePlaylist : String -> Playlist -> (Result Http.Error Playlist -> msg) -> Cmd msg
 savePlaylist token playlist fn =
@@ -151,6 +172,14 @@ search searchTerm token fn =
             searchResultDecoder
 
 -- Decoders
+userDecoder : Decode.Decoder User
+userDecoder =
+    Decode.map3 User
+    ( Decode.field "id" Decode.string )
+    ( Decode.field "href" Decode.string )
+    ( Decode.at [ "images" ] <| imagesDecoder )
+
+
 tracklistDecoder : Decode.Decoder (List PlaylistTrack)
 tracklistDecoder =
     Decode.at["items"]

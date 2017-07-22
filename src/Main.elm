@@ -1,9 +1,10 @@
-import Html exposing (Html, button, div, ul, li, pre, input, h1, h2, text, span)
+import Html exposing (Html, button, div, ul, li, p, pre, input, h1, h2, text, span)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode as Decode
 import Querystring
+import Account
 import Authorise
 import PlaylistEditor exposing (view, Model)
 import Playlists exposing (..)
@@ -15,8 +16,7 @@ main =
         { init = init
         , subscriptions = subscriptions
         , view = view
-        , update = update
-       }
+        , update = update }
 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
@@ -40,25 +40,33 @@ init flags =
         cmd = case oAuthToken of
             Nothing-> Cmd.none
             Just token ->
-                Spotify.fetchPlaylists
-                token
-                PlaylistResults
+                Cmd.batch
+                    [ Spotify.currentUser token GetCurrentUser
+                    , Spotify.fetchPlaylists token PlaylistResults ]
     in
     (
         { searchResults = { results = [], error = "" }
         , playlists = { playlists = [], error = "" }
         , selectedPlaylist = Nothing
+        , identity = Anonymous
         , oAuthToken = oAuthToken
+        , message = Nothing
         },
         cmd
     )
 
 -- MODEL
+type Identity
+    = Anonymous
+    | OAuth Spotify.User
+
 type alias Model =
     { searchResults : Search.Model
     , playlists : Playlists.Model
     , selectedPlaylist : Maybe PlaylistEditor.Model
+    , identity : Identity
     , oAuthToken : Maybe String
+    , message : Maybe String
     }
 
 model : Model
@@ -66,7 +74,9 @@ model =
     { searchResults = { results = [], error = "" }
     , playlists = { playlists = [], error = "" }
     , selectedPlaylist = Nothing
+    , identity = Anonymous
     , oAuthToken = Just ""
+    , message = Nothing
     }
 
 -- UPDATE
@@ -81,6 +91,8 @@ type Msg
     | PerformSearch String
     | SearchResultSelected Spotify.SearchResult
     | SearchResults (Result Http.Error (List Spotify.SearchResult))
+    | GetCurrentUser (Result Http.Error Spotify.User )
+
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -224,19 +236,36 @@ update msg model =
         SearchResults (Err error) ->
             ({ model | searchResults = { results = [], error = (toString error) }}, Cmd.none)
 
+        GetCurrentUser (Ok response) ->
+            ({ model | identity = OAuth response }, Cmd.none)
+
+        GetCurrentUser (Err error) ->
+            ({ model | message = Just (toString error) }, Cmd.none)
+
 -- VIEW
+feedbackView : Maybe String -> Html Msg
+feedbackView message =
+    case message of
+        Nothing -> Html.text ""
+        Just message ->
+            div [ class "alert alert-success" ] [ p [] [ text message ] ]
+
 view : Model -> Html Msg
 view model =
-        div [ class "container-fluid fillHeight" ]
-        [ div [ class "row fillHeight" ]
-            [ div [ class "col-md-2 sidebar" ] [ Playlists.view model.playlists FetchPlaylists SelectPlaylist ]
-            , div [ class "col-md-8 pl-0 pr-0 main" ]
-                [ div [ class "row" ] 
-                    [ div [ class "col-md-12" ]
-                        [ searchInputView (model.oAuthToken /= Nothing) ] ]
-                        , div [ class "pl-4 pr-4" ] [ Search.view model.searchResults SearchResultSelected ] ]
-            , div [ class "col-md-2 sidebar" ] [ PlaylistEditor.view model.selectedPlaylist SavePlaylist ] ]
-        ]
+    case model.identity of
+        Anonymous -> div [] [ Authorise.view False, feedbackView model.message ]
+        OAuth user ->
+            div [ class "container-fluid fillHeight" ]
+            [ div [ class "row fillHeight" ]
+                [ div [ class "col-md-2 sidebar" ] [ div [ class "mt-4 mb-4 text-center" ] [ Account.view user ]
+                , Playlists.view model.playlists FetchPlaylists SelectPlaylist ]
+                , div [ class "col-md-8 pl-0 pr-0 main" ]
+                    [ div [ class "row" ] 
+                        [ div [ class "col-md-12" ]
+                            [ searchInputView (model.oAuthToken /= Nothing) ] ]
+                            , div [ class "pl-4 pr-4" ] [ Search.view model.searchResults SearchResultSelected ] ]
+                , div [ class "col-md-2 sidebar" ] [ PlaylistEditor.view model.selectedPlaylist SavePlaylist ] ]
+            ]
 
 searchInputView : Bool -> Html Msg
 searchInputView isAuthorised =
