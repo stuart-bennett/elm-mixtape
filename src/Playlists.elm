@@ -17,8 +17,7 @@ itemView playlist selectFn =
             Just img -> img
     in
         li [ class "selectable"
-            , onClick (selectFn playlist)
-            , style [ ("background", "kljfldksf") ] ]
+            , onClick (selectFn playlist) ]
         [ div
             []
             [ div
@@ -38,8 +37,8 @@ view model refreshMsg selectFn =
             True ->
                 div [] [ text ("ERROR: " ++ model.error) ]
             False ->
-                div [ class "container-fluid" ]
+                div [ class "" ]
                 [ h1 [] [ text "Your Playlists" ]
-                , ul [ class "row list-unstyled" ] (List.map (\x -> itemView x selectFn) model.playlists)
+                , ul [ class "list-unstyled" ] (List.map (\x -> itemView x selectFn) model.playlists)
                 , button [ class "btn btn-primary", onClick refreshMsg ] [ text "Refresh" ]
                 , button [ class "btn btn-primary", onClick (selectFn { name = "untitled", id = "", image = Nothing }) ] [ text "Add new..." ] ]
