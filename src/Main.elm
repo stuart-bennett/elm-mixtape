@@ -90,7 +90,7 @@ update msg model =
                 new = case model.selectedPlaylist of
                     Nothing -> { name = "", id = "", tracks = [] }
                     Just sp ->
-                        { sp | tracks = ( List.map (\x -> { title = x.title, uri = x.uri, images = x.images, isNew = False }) sp.tracks ) }
+                        { sp | tracks = sp.tracks |> List.map Spotify.existingTrack }
             in
                 ({ model | selectedPlaylist = Just new }, Cmd.none)
 
@@ -108,11 +108,14 @@ update msg model =
 
                 cmd = case model.selectedPlaylist of
                     Nothing -> Cmd.none
-                    Just sp -> Spotify.savePlaylistTracks
-                        ( Maybe.withDefault "" model.oAuthToken )
-                        response.id
-                        ( sp.tracks |> List.filter (\x -> x.isNew) |> List.map (\x -> x.uri) )
-                        SavePlaylistTracks
+                    Just sp -> case model.oAuthToken of
+                        Nothing -> Cmd.none
+                        Just token ->
+                            Spotify.savePlaylistTracks
+                            token
+                            response.id
+                            ( sp.tracks |> List.filter (\x -> x.isNew) |> List.map (\x -> x.uri) )
+                            SavePlaylistTracks
             in
                 ({ model | selectedPlaylist = playlist }, cmd)
 
@@ -130,11 +133,13 @@ update msg model =
                             ( sp.tracks |> List.filter (\x -> x.isNew) |> List.map (\x -> x.uri) )
                             SavePlaylistTracks
 
-                    True ->
-                        Spotify.savePlaylist
-                        ( Maybe.withDefault "" model.oAuthToken )
-                        { name = playlist.name, id = playlist.id, image = Nothing }
-                        SavePlaylistResult
+                    True -> case model.oAuthToken of
+                        Nothing -> Cmd.none
+                        Just token ->
+                            Spotify.savePlaylist
+                            token
+                            { name = playlist.name, id = playlist.id, image = Nothing }
+                            SavePlaylistResult
             in
                 ( model, cmd )
 
@@ -144,10 +149,14 @@ update msg model =
                     { name = playlist.name
                     , id = playlist.id
                     , tracks = [] }
-                cmd = Spotify.getPlaylistTracks
-                    ( Maybe.withDefault "" model.oAuthToken )
-                    playlist.id
-                    PlaylistTracksResult
+
+                cmd = case model.oAuthToken of
+                    Nothing -> Cmd.none
+                    Just token ->
+                        Spotify.getPlaylistTracks
+                        token
+                        playlist.id
+                        PlaylistTracksResult
             in
                 ({ model | selectedPlaylist = newPlaylist }, cmd)
 
@@ -157,11 +166,7 @@ update msg model =
                     Nothing -> Nothing
                     Just sp ->
                         Just { sp
-                        | tracks =
-                            { title = searchResult.name
-                            , uri = searchResult.uri
-                            , images = searchResult.images
-                            , isNew = True } :: sp.tracks }
+                        | tracks = ( Spotify.trackFromSearchResult searchResult ) :: sp.tracks }
             in
                 case newValue of
                     Nothing ->
@@ -191,10 +196,13 @@ update msg model =
 
         PerformSearch term ->
             let
-                cmd = Spotify.search
-                    term
-                    (Maybe.withDefault "" model.oAuthToken)
-                    SearchResults
+                cmd = case model.oAuthToken of
+                    Nothing -> Cmd.none
+                    Just token ->
+                        Spotify.search
+                        term
+                        token
+                        SearchResults
             in
                 (model, cmd)
 

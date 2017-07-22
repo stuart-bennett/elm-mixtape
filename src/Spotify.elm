@@ -4,6 +4,8 @@ module Spotify exposing (
     savePlaylist,
     fetchPlaylists,
     savePlaylistTracks,
+    trackFromSearchResult,
+    existingTrack,
     SearchResult,
     Playlist,
     PlaylistTrack,
@@ -23,6 +25,20 @@ type alias PlaylistTrack =
     , uri : String
     , images: List Image
     , isNew : Bool }
+
+trackFromSearchResult : SearchResult -> PlaylistTrack
+trackFromSearchResult x =
+    { title = x.name
+    , uri = x.uri
+    , images = x.images
+    , isNew = True }
+
+existingTrack : PlaylistTrack -> PlaylistTrack
+existingTrack x =
+    { title = x.title
+    , uri = x.uri
+    , images = x.images
+    , isNew = False }
 
 type alias SearchResult =
     { name : String
@@ -154,9 +170,8 @@ searchResultDecoder =
                 <| Decode.map5 SearchResult
                 ( Decode.field "name" Decode.string )
                 ( Decode.field "id" Decode.string )
-                ( Decode.field
-                    "type"
-                    (Decode.map searchResultTypeDecoder Decode.string) )
+                ( Decode.field "type"
+                    ( Decode.map searchResultFromString Decode.string ) )
                 ( Decode.field "uri" Decode.string )
                 ( Decode.at ["album", "images"] <| imagesDecoder )
     in
@@ -170,17 +185,18 @@ imageDecoder : Decode.Decoder Image
 imageDecoder =
     Decode.map2 (\url width -> (url, width))
     ( Decode.field "url" Decode.string )
-    ( Decode.field "width" (Decode.map imageSizeDecoder Decode.int ))
+    ( Decode.field "width"
+        ( Decode.map imageSizeFromInt Decode.int ))
 
-imageSizeDecoder : Int -> ImageSize
-imageSizeDecoder val =
+imageSizeFromInt : Int -> ImageSize
+imageSizeFromInt val =
     case val of
         640 -> Large
         300 -> Medium
         _ -> Small
 
-searchResultTypeDecoder : String -> SearchResultType
-searchResultTypeDecoder val =
+searchResultFromString : String -> SearchResultType
+searchResultFromString val =
     case val of
         "artist" -> Artist
         _ -> Track
@@ -190,7 +206,9 @@ playlistDecoder =
     Decode.map3 Playlist
         ( Decode.field "name" Decode.string )
         ( Decode.field "id" Decode.string )
-        ( Decode.at ["images"] <| Decode.map List.head <| Decode.list ( Decode.field "url" Decode.string ) )
+        ( Decode.at ["images"] 
+            <| Decode.map List.head
+            <| Decode.list ( Decode.field "url" Decode.string ) )
 
 playlistsDecoder : Decode.Decoder (List Playlist)
 playlistsDecoder =
