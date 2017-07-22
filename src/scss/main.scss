@@ -1,11 +1,31 @@
+$card-bg: "transparent";
 @import "bootstrap";
 
-$color1: #E5E4E6;
-$color2: #D8D7D4;
+$color1: #FF6A00;
+$color2: #E83500;
 $color3: #BFB7B2;
+
+
+
+html {
+    height: 100%;
+}
+
 body {
-    color: $color3;
-    background: $color2;
+    height: 100%;
+    color: #FFFFFF;
+}
+
+.fillHeight {
+    height: 100%;
+}
+
+.sidebar {
+    background-color: $color1;
+}
+
+.main {
+    background-color: $color2;
 }
 
 .selectable {
@@ -18,6 +38,7 @@ body {
 
 .searchResult {
     max-height: 230px;
+    border: none;
     &-image {
         width: 100%;
         max-width: 100%;

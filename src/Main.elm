@@ -227,14 +227,13 @@ update msg model =
 -- VIEW
 view : Model -> Html Msg
 view model =
-        div [ class "container-fluid" ]
-        [ h1 [ class "text-center" ] [ text "elm-mixtape" ]
-        , div [ class "row" ]
-            [ div [ class "col-md-3" ] [ Playlists.view model.playlists FetchPlaylists SelectPlaylist ]
-            , div [ class "col-md-6" ]
+        div [ class "container-fluid fillHeight" ]
+        [ div [ class "row fillHeight" ]
+            [ div [ class "col-md-3 sidebar" ] [ Playlists.view model.playlists FetchPlaylists SelectPlaylist ]
+            , div [ class "col-md-6 main" ]
                 [ searchInputView (model.oAuthToken /= Nothing)
                 , Search.view model.searchResults SearchResultSelected ]
-            , div [ class "col-md-3" ] [ PlaylistEditor.view model.selectedPlaylist SavePlaylist ] ]
+            , div [ class "col-md-3 sidebar" ] [ PlaylistEditor.view model.selectedPlaylist SavePlaylist ] ]
         ]
 
 searchInputView : Bool -> Html Msg
