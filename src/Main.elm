@@ -239,7 +239,7 @@ view model =
 
 searchInputView : Bool -> Html Msg
 searchInputView isAuthorised =
-    div []
+    div [ class "mb-4" ]
     [ Authorise.view isAuthorised
     , input
     [ placeholder "Start typing a track name or artist..."
