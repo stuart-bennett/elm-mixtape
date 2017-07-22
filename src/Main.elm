@@ -229,13 +229,13 @@ view : Model -> Html Msg
 view model =
         div [ class "container-fluid fillHeight" ]
         [ div [ class "row fillHeight" ]
-            [ div [ class "col-md-3 sidebar" ] [ Playlists.view model.playlists FetchPlaylists SelectPlaylist ]
-            , div [ class "col-md-6 pl-0 pr-0 main" ]
+            [ div [ class "col-md-2 sidebar" ] [ Playlists.view model.playlists FetchPlaylists SelectPlaylist ]
+            , div [ class "col-md-8 pl-0 pr-0 main" ]
                 [ div [ class "row" ] 
                     [ div [ class "col-md-12" ]
                         [ searchInputView (model.oAuthToken /= Nothing) ] ]
                         , div [ class "pl-4 pr-4" ] [ Search.view model.searchResults SearchResultSelected ] ]
-            , div [ class "col-md-3 sidebar" ] [ PlaylistEditor.view model.selectedPlaylist SavePlaylist ] ]
+            , div [ class "col-md-2 sidebar" ] [ PlaylistEditor.view model.selectedPlaylist SavePlaylist ] ]
         ]
 
 searchInputView : Bool -> Html Msg

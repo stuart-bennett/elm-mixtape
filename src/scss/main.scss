@@ -1,11 +1,20 @@
 $card-bg: "transparent";
 @import "bootstrap";
 
-$color1: #FF6A00;
-$color2: #E83500;
+$color1: #015C6A;
+$color2: #00908D;
 $color3: #BFB7B2;
 
-
+@mixin linearGradient($top, $bottom){
+    background: $top; /* Old browsers */
+    background: -moz-linear-gradient(top,  $top 0%, $bottom 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,$top), color-stop(100%,$bottom)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  $top 0%,$bottom 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  $top 0%,$bottom 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  $top 0%,$bottom 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  $top 0%,$bottom 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#000000',GradientType=0 ); /* IE6-9 */
+}
 
 html {
     height: 100%;
@@ -21,11 +30,12 @@ body {
 }
 
 .sidebar {
+    @include linearGradient(darken($color1, 7%), $color1);
     background-color: $color1;
 }
 
 .main {
-    background-color: $color2;
+    background-color: saturate($color2. 30%);
 }
 
 .selectable {
@@ -35,7 +45,7 @@ body {
 }
 
 .searchInput {
-    background-color: darken($color2, 10%);
+    background-color: darken($color1, 3%);
 }
 
 .hide { display: none; }
