@@ -230,20 +230,22 @@ view model =
         div [ class "container-fluid fillHeight" ]
         [ div [ class "row fillHeight" ]
             [ div [ class "col-md-3 sidebar" ] [ Playlists.view model.playlists FetchPlaylists SelectPlaylist ]
-            , div [ class "col-md-6 main" ]
-                [ searchInputView (model.oAuthToken /= Nothing)
-                , Search.view model.searchResults SearchResultSelected ]
+            , div [ class "col-md-6 pl-0 pr-0 main" ]
+                [ div [ class "row" ] 
+                    [ div [ class "col-md-12" ]
+                        [ searchInputView (model.oAuthToken /= Nothing) ] ]
+                        , div [ class "pl-4 pr-4" ] [ Search.view model.searchResults SearchResultSelected ] ]
             , div [ class "col-md-3 sidebar" ] [ PlaylistEditor.view model.selectedPlaylist SavePlaylist ] ]
         ]
 
 searchInputView : Bool -> Html Msg
 searchInputView isAuthorised =
-    div [ class "mb-4" ]
+    div [ class "mb-4 pt-5 pb-5 pt-4 pb-4 searchInput" ]
     [ Authorise.view isAuthorised
-    , input
+    , div [ class "pl-4 pr-4" ] [ input
     [ placeholder "Start typing a track name or artist..."
     , type_ "search"
     , class "form-control"
     , onInput PerformSearch
-    ] []
+    ] [] ]
     ]

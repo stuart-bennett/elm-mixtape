@@ -34,6 +34,10 @@ body {
     }
 }
 
+.searchInput {
+    background-color: darken($color2, 10%);
+}
+
 .hide { display: none; }
 
 .searchResult {

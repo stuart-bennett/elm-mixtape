@@ -16,16 +16,14 @@ itemView playlist selectFn =
             Nothing -> ""
             Just img -> img
     in
-        li [ class "selectable"
+        li [ class "selectable pt-2 pb-2"
             , onClick (selectFn playlist) ]
-        [ div
-            []
             [ div
                 []
-                [ h1 [ class "h4" ] [ text playlist.name ] ]
+                [ span [] [ text playlist.name ] ]
             , button
                 [ class "btn btn-primary hide", onClick (selectFn playlist) ]
-                [ text "Select" ] ] ]
+                [ text "Select" ] ]
 
 view : Model -> msg -> (Spotify.Playlist -> msg) -> Html msg
 view model refreshMsg selectFn =
@@ -38,7 +36,7 @@ view model refreshMsg selectFn =
                 div [] [ text ("ERROR: " ++ model.error) ]
             False ->
                 div [ class "" ]
-                [ h1 [] [ text "Your Playlists" ]
+                [ h1 [ class "h4" ] [ text "Your Playlists" ]
                 , ul [ class "list-unstyled" ] (List.map (\x -> itemView x selectFn) model.playlists)
                 , button [ class "btn btn-primary", onClick refreshMsg ] [ text "Refresh" ]
                 , button [ class "btn btn-primary", onClick (selectFn { name = "untitled", id = "", image = Nothing }) ] [ text "Add new..." ] ]

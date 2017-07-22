@@ -44,11 +44,11 @@ tracksView track =
             Just tuple -> Tuple.first tuple
     in
         li
-        [ class "" ]
+        [ class "mt-2 mb-2" ]
         [ div [ class "media" ]
-            [ div [ class "media-left" ] [ img [ src image ] [] ]
+            [ img [ class "d-flex mr-3", src image ] []
             , div [ class "media-body" ]
-                [ h1 [ class "h5" ] [ text track.title ] ] ] ]
+                [ span [] [ text track.title ] ] ] ]
 
 noPlaylistSelectedView : Html msg
 noPlaylistSelectedView =
