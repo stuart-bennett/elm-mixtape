@@ -158,7 +158,7 @@ update msg model =
 
         SelectPlaylist playlist ->
             let
-                newPlaylist = Just
+                newPlaylist =
                     { name = playlist.name
                     , id = playlist.id
                     , images = playlist.images
@@ -166,13 +166,15 @@ update msg model =
 
                 cmd = case model.oAuthToken of
                     Nothing -> Cmd.none
-                    Just token ->
-                        Spotify.getPlaylistTracks
-                        token
-                        playlist.id
-                        PlaylistTracksResult
+                    Just token -> case (String.isEmpty newPlaylist.id) of
+                        True -> Cmd.none
+                        False ->
+                            Spotify.getPlaylistTracks
+                            token
+                            playlist.id
+                            PlaylistTracksResult
             in
-                ({ model | selectedPlaylist = newPlaylist }, cmd)
+                ({ model | selectedPlaylist = Just newPlaylist }, cmd)
 
         SearchResultSelected searchResult ->
             let

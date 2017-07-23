@@ -32,7 +32,7 @@ listItemView model selectFn =
             Nothing -> ""
             Just tuple -> Tuple.first tuple
     in
-        li [ class "col-md-4  mb-4"] [ div [ class "card selectable searchResult"
+        li [ class "col-md-4 mb-4"] [ div [ class "card selectable searchResult"
             , onClick (selectFn model) ]
             [ img [ class "card-img-top searchResult-image", src image ] []
             , div [ class "card-block" ]
