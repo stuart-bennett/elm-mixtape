@@ -36,6 +36,6 @@ listItemView model selectFn =
             , onClick (selectFn model) ]
             [ img [ class "card-img-top searchResult-image", src image ] []
             , div [ class "card-block" ]
-                [ h1 [ class "h6" ] [ text model.name ]
+                [ h1 [ class "h6 text-uppercase" ] [ text model.name ]
                 , ul [ class "list-unstyled" ] ( List.map (\x -> li [] [ text x ])  model.artists )
                 , span [] [ text model.album ] ] ] ]

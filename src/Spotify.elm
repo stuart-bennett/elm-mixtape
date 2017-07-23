@@ -11,6 +11,7 @@ module Spotify exposing (
     SearchResult,
     Playlist,
     PlaylistTrack,
+    Image,
     ImageSize(..))
 
 import Json.Decode as Decode
@@ -29,6 +30,8 @@ type alias User =
 
 type alias PlaylistTrack =
     { title : String
+    , artists : List String
+    , album : String
     , uri : String
     , images: List Image
     , isNew : Bool }
@@ -38,6 +41,8 @@ trackFromSearchResult x =
     { title = x.name
     , uri = x.uri
     , images = x.images
+    , artists = x.artists
+    , album = x.album
     , isNew = True }
 
 existingTrack : PlaylistTrack -> PlaylistTrack
@@ -45,6 +50,8 @@ existingTrack x =
     { title = x.title
     , uri = x.uri
     , images = x.images
+    , artists = x.artists
+    , album = x.album
     , isNew = False }
 
 type alias SearchResult =
@@ -60,7 +67,7 @@ type alias SearchResult =
 type alias Playlist =
     { name: String
     , id: String
-    , image: Maybe String
+    , images: List Image
     }
 
 type ImageSize
@@ -186,9 +193,11 @@ tracklistDecoder : Decode.Decoder (List PlaylistTrack)
 tracklistDecoder =
     Decode.at["items"]
         <| Decode.list
-        <| Decode.map3
-            ( \title uri images -> { title = title, uri = uri, images = images, isNew = False } )
+        <| Decode.map5
+            ( \title artists album uri images -> { title = title, uri = uri, artists = artists, album = album, images = images, isNew = False } )
             ( Decode.at ["track"] <| ( Decode.field "name" Decode.string ) )
+            ( Decode.at ["track", "artists"] <| Decode.list ( Decode.field "name" Decode.string ) )
+            ( Decode.at ["track", "album"] <| ( Decode.field "name" Decode.string ) )
             ( Decode.at ["track"] <| ( Decode.field "uri" Decode.string ) )
             ( Decode.at ["track", "album", "images"] <| imagesDecoder )
 
@@ -239,9 +248,7 @@ playlistDecoder =
     Decode.map3 Playlist
         ( Decode.field "name" Decode.string )
         ( Decode.field "id" Decode.string )
-        ( Decode.at ["images"] 
-            <| Decode.map List.head
-            <| Decode.list ( Decode.field "url" Decode.string ) )
+        ( Decode.at ["images"] <| imagesDecoder )
 
 playlistsDecoder : Decode.Decoder (List Playlist)
 playlistsDecoder =

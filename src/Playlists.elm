@@ -12,11 +12,16 @@ type alias Model =
 itemView : Spotify.Playlist -> (Spotify.Playlist -> msg) -> Html msg
 itemView playlist selectFn =
     let
-        img = case playlist.image of
+        mediumImage = List.head
+            <| List.filter
+                (\x -> (Tuple.second x) == Spotify.Medium)
+                playlist.images
+
+        img = case mediumImage of
             Nothing -> ""
-            Just img -> img
+            Just img -> Tuple.first img
     in
-        li [ class "selectable pt-2 pb-2"
+        li [ class "selectable playlist-item pt-4 pb-4"
             , onClick (selectFn playlist) ]
             [ div
                 []
@@ -36,7 +41,7 @@ view model refreshMsg selectFn =
                 div [] [ text ("ERROR: " ++ model.error) ]
             False ->
                 div [ class "" ]
-                [ h1 [ class "h4" ] [ text "Your Playlists" ]
+                [ h1 [ class "h4 text-uppercase text-center" ] [ text "Your Playlists" ]
                 , ul [ class "list-unstyled" ] (List.map (\x -> itemView x selectFn) model.playlists)
                 , button [ class "btn btn-primary", onClick refreshMsg ] [ text "Refresh" ]
-                , button [ class "btn btn-primary", onClick (selectFn { name = "untitled", id = "", image = Nothing }) ] [ text "Add new..." ] ]
+                , button [ class "btn btn-primary", onClick (selectFn { name = "untitled", id = "", images = []}) ] [ text "Add new..." ] ]

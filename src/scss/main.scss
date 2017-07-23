@@ -30,8 +30,12 @@ body {
 }
 
 .sidebar {
-    @include linearGradient(darken($color1, 7%), $color1);
+    @include linearGradient(darken($color1, 15%), $color1);
     background-color: $color1;
+}
+
+.actionRequired {
+    color: rgba(#FFFFFF, 0.4);
 }
 
 .main {
@@ -59,4 +63,8 @@ body {
         max-height: 120px;
         object-fit: cover;
     }
+}
+
+.playlist-item {
+    border-bottom: solid 1px darken($color2, 10%);
 }

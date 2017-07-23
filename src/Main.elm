@@ -100,7 +100,7 @@ update msg model =
         SavePlaylistTracks (Ok response) ->
             let
                 new = case model.selectedPlaylist of
-                    Nothing -> { name = "", id = "", tracks = [] }
+                    Nothing -> { name = "", id = "", images = [], tracks = [] }
                     Just sp ->
                         { sp | tracks = sp.tracks |> List.map Spotify.existingTrack }
             in
@@ -116,6 +116,7 @@ update msg model =
                     Just sp -> Just
                         { name = response.name
                         , id = response.id
+                        , images = response.images
                         , tracks = sp.tracks }
 
                 cmd = case model.selectedPlaylist of
@@ -150,7 +151,7 @@ update msg model =
                         Just token ->
                             Spotify.savePlaylist
                             token
-                            { name = playlist.name, id = playlist.id, image = Nothing }
+                            { name = playlist.name, id = playlist.id, images = []}
                             SavePlaylistResult
             in
                 ( model, cmd )
@@ -160,6 +161,7 @@ update msg model =
                 newPlaylist = Just
                     { name = playlist.name
                     , id = playlist.id
+                    , images = playlist.images
                     , tracks = [] }
 
                 cmd = case model.oAuthToken of
@@ -194,6 +196,7 @@ update msg model =
                     | selectedPlaylist = Just
                         { name = playlist.name
                         , id = playlist.id
+                        , images = playlist.images
                         , tracks = ( List.append playlist.tracks response ) } },
                     Cmd.none)
 
@@ -264,7 +267,7 @@ view model =
                         [ div [ class "col-md-12" ]
                             [ searchInputView (model.oAuthToken /= Nothing) ] ]
                             , div [ class "pl-4 pr-4" ] [ Search.view model.searchResults SearchResultSelected ] ]
-                , div [ class "col-md-2 sidebar" ] [ PlaylistEditor.view model.selectedPlaylist SavePlaylist ] ]
+                , div [ class "col-md-2 pl-0 pr-0 sidebar" ] [ PlaylistEditor.view model.selectedPlaylist SavePlaylist ] ]
             ]
 
 searchInputView : Bool -> Html Msg
