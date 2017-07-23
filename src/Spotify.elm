@@ -53,6 +53,8 @@ type alias SearchResult =
     , type_ : SearchResultType
     , uri : String
     , images : List Image
+    , artists : List String
+    , album : String
     }
 
 type alias Playlist =
@@ -196,13 +198,15 @@ searchResultDecoder =
         trackDecoder =
             Decode.at["tracks", "items"]
                 <| Decode.list
-                <| Decode.map5 SearchResult
+                <| Decode.map7 SearchResult
                 ( Decode.field "name" Decode.string )
                 ( Decode.field "id" Decode.string )
                 ( Decode.field "type"
                     ( Decode.map searchResultFromString Decode.string ) )
                 ( Decode.field "uri" Decode.string )
                 ( Decode.at ["album", "images"] <| imagesDecoder )
+                ( Decode.at ["artists"] <| Decode.list ( Decode.field "name" Decode.string ) )
+                ( Decode.at ["album"] <| ( Decode.field "name" Decode.string ) )
     in
         trackDecoder
 
