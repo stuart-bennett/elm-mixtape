@@ -16,7 +16,7 @@ view model selectFn =
         Nothing ->
             div [ class "pl-4 pr-4" ] [ noPlaylistSelectedView ]
         Just playlist ->
-            div [ class "" ] [ editorView playlist selectFn ]
+            div [ class "playlist" ] [ editorView playlist selectFn ]
 
 editorView : Model -> (Model -> msg) -> Html msg
 editorView model saveFn =
@@ -33,10 +33,10 @@ editorView model saveFn =
         case hasTracks of
             True ->
                 div []
-                [ img [ class "mw-100 mb-4", src image ] []
-                , div [ class "pl-4 pr-4" ]
-                    [ h2 [ contenteditable True, class "mb-4" ] [ text model.name ]
-                    , button [ class "btn btn-primary", onClick ( saveFn model ) ] [ text "Save" ]
+                [ img [ class "mw-100", src image ] []
+                , div [ class "playlist-title pt-4 pb-4 pl-3 pr-3 mb-4" ] [ h2 [ contenteditable True, class "h5 mb-0 text-uppercase" ] [ text model.name ] ]
+                , div [ class "pl-3 pr-3" ]
+                    [ button [ class "btn btn-primary", onClick ( saveFn model ) ] [ text "Save" ]
                     , ul [ class "list-unstyled" ] ( List.map tracksView model.tracks ) ] ]
             False ->
                 div []
