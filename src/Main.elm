@@ -75,7 +75,7 @@ model =
     , playlists = { playlists = [], error = "" }
     , selectedPlaylist = Nothing
     , identity = Anonymous
-    , oAuthToken = Just ""
+    , oAuthToken = Nothing
     , message = Nothing
     }
 
@@ -104,10 +104,10 @@ update msg model =
                     Just sp ->
                         { sp | tracks = sp.tracks |> List.map Spotify.existingTrack }
             in
-                ({ model | selectedPlaylist = Just new }, Cmd.none)
+                ({ model | message = Just "Playlist Saved", selectedPlaylist = Just new }, Cmd.none)
 
         SavePlaylistTracks (Err error) ->
-            (model, Cmd.none)
+            ({ model | message = Just (toString error) }, Cmd.none)
 
         SavePlaylistResult (Ok response) ->
             let
@@ -130,9 +130,10 @@ update msg model =
                             ( sp.tracks |> List.filter (\x -> x.isNew) |> List.map (\x -> x.uri) )
                             SavePlaylistTracks
             in
-                ({ model | selectedPlaylist = playlist }, cmd)
+                ({ model | selectedPlaylist = playlist, message = Just "Playlist Saved" }, cmd)
 
-        SavePlaylistResult (Err _) -> (model, Cmd.none)
+        SavePlaylistResult (Err err) ->
+            ({ model | message = Just (toString err) }, Cmd.none)
 
         SavePlaylist playlist ->
             let
@@ -265,10 +266,12 @@ view model =
                 [ div [ class "col-md-2 sidebar" ] [ div [ class "mt-4 mb-4 text-center" ] [ Account.view user ]
                 , Playlists.view model.playlists FetchPlaylists SelectPlaylist ]
                 , div [ class "col-md-8 pl-0 pr-0 main" ]
-                    [ div [ class "row" ] 
+                    [ div [ class "row" ]
                         [ div [ class "col-md-12" ]
                             [ searchInputView (model.oAuthToken /= Nothing) ] ]
-                            , div [ class "pl-4 pr-4" ] [ Search.view model.searchResults SearchResultSelected ] ]
+                            , div [ class "pl-4 pr-4" ]
+                                  [ feedbackView model.message
+                                  , Search.view model.searchResults SearchResultSelected ] ]
                 , div [ class "col-md-2 pl-0 pr-0 sidebar" ] [ PlaylistEditor.view model.selectedPlaylist SavePlaylist ] ]
             ]
 
