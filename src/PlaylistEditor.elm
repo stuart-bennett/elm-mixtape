@@ -64,8 +64,8 @@ tracksView track =
         [ div [ class "media" ]
             [ img [ class "d-flex mr-3", src image ] []
             , div [ class "media-body" ]
-                [ h1 [ class "h6" ] [ text track.title ]
-                , span [ class "" ] [ text primaryArtist ] ] ] ]
+                [ h1 [ class "h6 mb-0" ] [ text track.title ]
+                , p [ class "small" ] [ text primaryArtist ] ] ] ]
 
 noPlaylistSelectedView : Html msg
 noPlaylistSelectedView =
