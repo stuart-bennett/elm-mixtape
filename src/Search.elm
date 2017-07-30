@@ -6,6 +6,7 @@ import Spotify
 
 type alias Model =
     { results : List (Spotify.SearchResult)
+    , hasSearched: Bool
     , error : String
     }
 
@@ -13,12 +14,14 @@ type alias Model =
 view : Model -> (Spotify.SearchResult -> msg) -> Html msg
 view model selectFn =
     let
-        hasError = not (String.isEmpty model.error)
+        hasError = (not (String.isEmpty model.error), model.hasSearched && List.isEmpty model.results)
     in
         case hasError of
-            True ->
+            (True, _) ->
                 span [] [ text model.error ]
-            False ->
+            (_, True) ->
+                span [] [ text "no results!" ]
+            (False, False) ->
                 ul [ class "list-unstyled row" ]
                     ( List.map (\x -> (listItemView x selectFn)) model.results)
 

@@ -45,7 +45,7 @@ init flags =
                     , Spotify.fetchPlaylists token PlaylistResults ]
     in
     (
-        { searchResults = { results = [], error = "" }
+        { searchResults = { results = [], hasSearched = False, error = "" }
         , playlists = { playlists = [], error = "" }
         , selectedPlaylist = Nothing
         , identity = Anonymous
@@ -71,7 +71,7 @@ type alias Model =
 
 model : Model
 model =
-    { searchResults = { results = [], error = "" }
+    { searchResults = { results = [], hasSearched = False, error = "" }
     , playlists = { playlists = [], error = "" }
     , selectedPlaylist = Nothing
     , identity = Anonymous
@@ -214,15 +214,20 @@ update msg model =
 
         PerformSearch term ->
             let
+                searchTermPresent = not (String.isEmpty term)
                 cmd = case model.oAuthToken of
                     Nothing -> Cmd.none
-                    Just token ->
-                        Spotify.search
-                        term
-                        token
-                        SearchResults
+                    Just token -> case searchTermPresent of
+                        False -> Cmd.none
+                        True ->
+                            Spotify.search
+                            term
+                            token
+                            SearchResults
             in
-                (model, cmd)
+                case searchTermPresent of
+                    False -> ({ model | searchResults = { error = "", hasSearched = True, results = [] }}, cmd)
+                    True -> (model, cmd)
 
         PlaylistResults (Ok response) ->
             let
@@ -237,10 +242,10 @@ update msg model =
                 ({ model | playlists = playlists }, Cmd.none)
 
         SearchResults (Ok response) ->
-            ({ model | searchResults = { results = response, error = "" }}, Cmd.none)
+            ({ model | searchResults = { results = response, hasSearched = True, error = "" }}, Cmd.none)
 
         SearchResults (Err error) ->
-            ({ model | searchResults = { results = [], error = (toString error) }}, Cmd.none)
+            ({ model | searchResults = { results = [], hasSearched = True, error = (toString error) }}, Cmd.none)
 
         GetCurrentUser (Ok response) ->
             ({ model | identity = OAuth response }, Cmd.none)
