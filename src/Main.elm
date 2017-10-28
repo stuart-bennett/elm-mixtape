@@ -2,7 +2,6 @@ import Html exposing (Html, button, div, ul, li, p, pre, input, h1, h2, text, sp
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http
-import Json.Decode as Decode
 import Querystring
 import Account
 import Authorise
@@ -31,11 +30,9 @@ type alias Flags =
 init : Flags -> (Model, Cmd Msg)
 init flags =
     let
-        -- Tokens appear in the fragment during oAuth "implicit" flow
-        queryStringItems = Querystring.getItems flags.locationFragment
-        oAuthToken = Tuple.second
-            <| Maybe.withDefault (Nothing, Nothing)
-            <| List.head queryStringItems
+        -- Parse token from http://return-url/page#token
+        oAuthToken = Querystring.getValue "access_token"
+            <| Querystring.fromString flags.locationFragment
 
         cmd = case oAuthToken of
             Nothing-> Cmd.none
