@@ -6,7 +6,7 @@
         <script src="elm.js"></script>
         <script>
         var app = Elm.Main.fullscreen({
-            locationFragment: window.location.hash
+            locationFragment: window.location.hash.substring(1)
         });
         </script>
     </body>
